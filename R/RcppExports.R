@@ -17,11 +17,11 @@ k_mat_exp <- function(coords, h) {
     .Call(`_SpatialBSS_k_mat_exp`, coords, h)
 }
 
-sp_cov_mat <- function(x, k) {
-    .Call(`_SpatialBSS_sp_cov_mat`, x, k)
+sp_lcov_sparse <- function(x, k) {
+    .Call(`_SpatialBSS_sp_lcov_sparse`, x, k)
 }
 
-sp_cov_mat_sparse <- function(x, k) {
-    .Call(`_SpatialBSS_sp_cov_mat_sparse`, x, k)
+sp_ldiff_sparse <- function(x, k) {
+    .Call(`_SpatialBSS_sp_ldiff_sparse`, x, k)
 }
 

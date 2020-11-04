@@ -38,14 +38,21 @@ spatial_kernel_matrix <- function(coords, kernel_type = c('ring', 'ball', 'gauss
   return(kernel_list)
 }
 
-local_covariance_matrix <- function(x, kernel_list, whitening = TRUE) {
+local_covariance_matrix <- function(x, kernel_list, lcov = c('lcov', 'ldiff'), whitening = TRUE) {
+  lcov <- match.arg(lcov)
+  
   if (whitening) {
-    x_w <- white_data(x)
-    cov_sp_list <- lapply(kernel_list, sp_cov_mat_sparse, x = x_w$x_w)
-  } else {
-    cov_sp_list <- lapply(kernel_list, sp_cov_mat_sparse, x = x)
+    x <- white_data(x)$x_w
   }
+  
+  cov_sp_list <- switch(lcov,
+    'lcov'  = lapply(kernel_list, function(k_mat) sp_lcov_sparse(x = x, k = k_mat)),
+    'ldiff' = lapply(kernel_list, function(k_mat) sp_ldiff_sparse(x = x, k = k_mat))
+  )
+  
   cov_sp_list <- lapply(cov_sp_list, function(x) (x + t(x)) / 2)
+  
+  attr(cov_sp_list, 'lcov') <- lcov
   
   return(cov_sp_list)
 }
@@ -57,4 +64,33 @@ predict_idw <- function(vals, coords, p, n_grid) {
   vals_pred <- idw(coords_pred = coords_pred, coords_vals = coords, vals = vals, p = p)
   colnames(vals_pred) <- paste0(colnames(vals), '.pred')
   return(list(vals_pred_idw = vals_pred, coords_pred_idw = coords_pred))
+}
+
+diag_scatters <- function(cov_list, ordered, ...) {
+  decr <- if (attr(cov_list, 'lcov') == 'ldiff') FALSE else TRUE
+  k <- length(cov_list)
+  if (k == 1) {
+    cov_evd <- eigen(cov_list[[1]], symmetric = TRUE)
+    u <- cov_evd$vectors
+    d <- diag(cov_evd$values)
+  } else {
+    jade <- JADE::frjd(do.call(rbind, cov_list), ...)
+    u <- jade$V
+    d <- jade$D
+  }
+  
+  p <- ncol(d)
+  if (ordered) {
+    diags_mat <- matrix(0, nrow = k, ncol = p)
+    for (idx in 1:k) {
+      diags_mat[idx, ] <- diag(d[(1:p) + (idx - 1) * p, ])
+    }
+    diag_order <- order(colSums(diags_mat ^ 2), decreasing = decr)
+    u <- u[, diag_order]
+    for (idx in 1:k) {
+      d[(1:p) + (idx - 1) * p, ] <- d[(1:p) + (idx - 1) * p, ][diag_order, diag_order]
+    }
+  } 
+  
+  return(list(u = u, d = d))
 }

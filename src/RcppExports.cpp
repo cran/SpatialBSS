@@ -57,27 +57,27 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// sp_cov_mat
-arma::mat sp_cov_mat(const arma::mat& x, const arma::mat& k);
-RcppExport SEXP _SpatialBSS_sp_cov_mat(SEXP xSEXP, SEXP kSEXP) {
+// sp_lcov_sparse
+arma::mat sp_lcov_sparse(const arma::mat& x, const arma::mat& k);
+RcppExport SEXP _SpatialBSS_sp_lcov_sparse(SEXP xSEXP, SEXP kSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const arma::mat& >::type x(xSEXP);
     Rcpp::traits::input_parameter< const arma::mat& >::type k(kSEXP);
-    rcpp_result_gen = Rcpp::wrap(sp_cov_mat(x, k));
+    rcpp_result_gen = Rcpp::wrap(sp_lcov_sparse(x, k));
     return rcpp_result_gen;
 END_RCPP
 }
-// sp_cov_mat_sparse
-arma::mat sp_cov_mat_sparse(const arma::mat& x, const arma::mat& k);
-RcppExport SEXP _SpatialBSS_sp_cov_mat_sparse(SEXP xSEXP, SEXP kSEXP) {
+// sp_ldiff_sparse
+arma::mat sp_ldiff_sparse(const arma::mat& x, const arma::mat& k);
+RcppExport SEXP _SpatialBSS_sp_ldiff_sparse(SEXP xSEXP, SEXP kSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const arma::mat& >::type x(xSEXP);
     Rcpp::traits::input_parameter< const arma::mat& >::type k(kSEXP);
-    rcpp_result_gen = Rcpp::wrap(sp_cov_mat_sparse(x, k));
+    rcpp_result_gen = Rcpp::wrap(sp_ldiff_sparse(x, k));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -87,8 +87,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_SpatialBSS_k_mat_ball", (DL_FUNC) &_SpatialBSS_k_mat_ball, 2},
     {"_SpatialBSS_k_mat_ring", (DL_FUNC) &_SpatialBSS_k_mat_ring, 3},
     {"_SpatialBSS_k_mat_exp", (DL_FUNC) &_SpatialBSS_k_mat_exp, 2},
-    {"_SpatialBSS_sp_cov_mat", (DL_FUNC) &_SpatialBSS_sp_cov_mat, 2},
-    {"_SpatialBSS_sp_cov_mat_sparse", (DL_FUNC) &_SpatialBSS_sp_cov_mat_sparse, 2},
+    {"_SpatialBSS_sp_lcov_sparse", (DL_FUNC) &_SpatialBSS_sp_lcov_sparse, 2},
+    {"_SpatialBSS_sp_ldiff_sparse", (DL_FUNC) &_SpatialBSS_sp_ldiff_sparse, 2},
     {NULL, NULL, 0}
 };
 

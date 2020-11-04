@@ -1,8 +1,8 @@
 Package: SpatialBSS
 Type: Package
 Title: Blind Source Separation for Multivariate Spatial Data
-Version: 0.8
-Date: 2020-03-26
+Version: 0.9-0
+Date: 2020-11-04
 Authors@R: 
     c(person(given = "Christoph",
              family = "Muehlmann",
@@ -25,10 +25,10 @@ Suggests: sf, RandomFields, knitr, rmarkdown
 VignetteBuilder: knitr
 LinkingTo: Rcpp, RcppArmadillo
 NeedsCompilation: yes
-Packaged: 2020-03-26 10:13:16 UTC; cmuehlmann
+Packaged: 2020-11-04 09:11:08 UTC; cmuehlmann
 Author: Christoph Muehlmann [aut, cre]
     (<https://orcid.org/0000-0001-7330-8434>),
   Klaus Nordhausen [aut] (<https://orcid.org/0000-0002-3758-8501>),
   Joni Virta [aut] (<https://orcid.org/0000-0002-2150-2769>)
 Repository: CRAN
-Date/Publication: 2020-03-26 14:50:05 UTC
+Date/Publication: 2020-11-04 10:40:03 UTC

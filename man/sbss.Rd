@@ -16,7 +16,8 @@ Spatial Blind Source Separation
 sbss(x, ...)
 
 \method{sbss}{default}(x, coords, kernel_type = c('ring', 'ball', 'gauss'), 
-     kernel_parameters, ordered = TRUE, kernel_list = NULL, \dots)
+     kernel_parameters, lcov = c('lcov', 'ldiff'), 
+     ordered = TRUE, kernel_list = NULL, \dots)
 \method{sbss}{SpatialPointsDataFrame}(x, \dots)
 \method{sbss}{sf}(x, \dots)
 }
@@ -29,10 +30,13 @@ either a numeric matrix of dimension \code{c(n, p)} where the \code{p} columns c
 a numeric matrix of dimension \code{c(n,2)} where each row represents the coordinates of a point in the spatial domain. Only needed if \code{x} is a matrix and the argument \code{kernel_list} is \code{NULL}.
 }
   \item{kernel_type}{
-a character string indicating which kernel function to use. Either \code{'ring'} (default), \code{'ball'} or \code{'gauss'}.
+a string indicating which kernel function to use. Either \code{'ring'} (default), \code{'ball'} or \code{'gauss'}.
 }
   \item{kernel_parameters}{
 a numeric vector that gives the parameters for the kernel function. At least length of one for \code{'ball'} and \code{'gauss'} or two for \code{'ring'} kernel, see details.
+}
+  \item{lcov}{
+a string indicating which type of local covariance matrix to use. Either \code{'lcov'} (default) or \code{'ldiff'}.
 }
   \item{ordered}{
 logical. If \code{TRUE} the entries of the latent field are ordered by the sum of squared (pseudo-)eigenvalues of the diagonalized local covariance matrix/matrices. Default is \code{TRUE}.
@@ -46,9 +50,12 @@ further arguments for the fast real joint diagonalization algorithm that jointly
 }
 
 \details{
-Formally, local covariance matrices are defined as:
-\deqn{ M(f) = 1/n \sum_{i,j} f(d_{i,j}) x(s_i) x(s_j)' .}
-Where \eqn{d_{i,j} \ge 0} correspond to the pairwise distances between coordinates, \eqn{x(s_i)} are the \code{p} random field values at location \eqn{s_i} and the kernel function \eqn{f(d)} determines the locality. The following kernel functions are implemented and chosen with the argument \code{kernel_type}:
+Two versions of local covariance matrices are implemented, the argument \code{lcov} determines which version is used:
+\itemize{
+  \item \code{'lcov'}: \deqn{ LCov(f) = 1/n \sum_{i,j} f(d_{i,j}) x(s_i) x(s_j)' ,}
+  \item \code{'ldiff'}: \deqn{ LDiff(f) = 1/n \sum_{i,j} f(d_{i,j}) (x(s_i)-x(s_j)) (x(s_i)-x(s_j))' .}
+}
+Where \eqn{d_{i,j} \ge 0} correspond to the pairwise distances between coordinates, \eqn{x(s_i)} are the \code{p} random field values at location \eqn{s_i} and the kernel function \eqn{f(d)} determines the locality. LDiff matrices are supposed to be more robust when the random field shows a smooth trend. The following kernel functions are implemented and chosen with the argument \code{kernel_type}:
 \itemize{
   \item \code{'ring'}: parameters are inner radius \eqn{r_i} and outer radius \eqn{r_o}, with \eqn{r_i < r_o}, and \eqn{r_i, r_o \ge 0}: \deqn{f(d;r_i, r_o) = I(r_i < d \le r_o)}
   \item \code{'ball'}: parameter is the radius \eqn{r}, with \eqn{r \ge 0}: \deqn{f(d;r) = I(d \le r)}
@@ -102,6 +109,8 @@ If more than one local covariance matrix is used \code{sbss} jointly diagonalize
 \references{
 Bachoc, F., Genton, M. G, Nordhausen, K., Ruiz-Gazen, A. and Virta, J. (2020), \emph{Spatial Blind Source Separation}, Biometrika, \url{https://doi.org/10.1093/biomet/asz079}, \cr <doi:10.1093/biomet/asz079>.
 
+Nordhausen, K., Oja, H., Filzmoser, P., Reimann, C. (2015), \emph{Blind Source Separation for Spatial Compositional Data}, Mathematical Geosciences 47, 753-770, \url{https://doi.org/10.1007/s11004-014-9559-5}, <https://doi.org/10.1007/s11004-014-9559-5>.
+
 }
 
 \seealso{
@@ -147,6 +156,12 @@ w_unmix <- coef(sbss_result)
 # apply the same sbss with a kernel list
 kernel_list <- spatial_kernel_matrix(coords, kernel_type = 'ring', kernel_parameters)
 sbss_result_k <- sbss(field, kernel_list = kernel_list)
+
+# apply sbss with three ring kernels and local difference matrices
+sbss_result_ldiff <- 
+  sbss(field, coords, kernel_type = 'ring', 
+       kernel_parameters = kernel_parameters, lcov = 'ldiff')
+
 
 }
 

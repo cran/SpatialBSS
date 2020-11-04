@@ -8,33 +8,11 @@
 //
 // [[Rcpp::depends(RcppArmadillo)]]
 
-// computes the spatial covariance matrix for a given kernel matrix
-//
-// [[Rcpp::export]]
-arma::mat sp_cov_mat(const arma::mat & x,
-                     const arma::mat & k) {
-  const int n = x.n_rows;
-  const int p = x.n_cols;
-  arma::mat L(p,p);
-  L.zeros();
-  
-  for(int i=0; i < n; ++i) {
-    for(int j=0; j < n; ++j) {
-      L = L + k(i,j)*(x.row(i).t()*x.row(j));
-    }
-  }
-  
-  L = L/n;
-  
-  return L;
-}
-
-
 // computes the spatial covariance matrix for a given kernel matrix using sparse matrix
 //
 // [[Rcpp::export]]
-arma::mat sp_cov_mat_sparse(const arma::mat & x,
-                            const arma::mat & k) {
+arma::mat sp_lcov_sparse(const arma::mat & x,
+                         const arma::mat & k) {
   const int n = x.n_rows;
   const int p = x.n_cols;
   arma::mat L(p,p);
@@ -51,6 +29,33 @@ arma::mat sp_cov_mat_sparse(const arma::mat & x,
   }  
   
   L = L/n;
+  
+  return L;
+}
+
+// computes the local difference matrix for a given kernel matrix using sparse matrix
+//
+// [[Rcpp::export]]
+arma::mat sp_ldiff_sparse(const arma::mat & x,
+                          const arma::mat & k) {
+  const int n = x.n_rows;
+  const int p = x.n_cols;
+  arma::rowvec diff(p);
+  diff.zeros();
+  arma::mat L(p,p);
+  L.zeros();
+  
+  arma::sp_mat k_sp = arma::sp_mat(k);
+  
+  arma::sp_mat::iterator it     = k_sp.begin();
+  arma::sp_mat::iterator it_end = k_sp.end();
+  
+  for(; it != it_end; ++it) {
+    diff = x.row(it.row()) - x.row(it.col());
+    L += (*it) * (diff.t() * diff);
+  }  
+  
+  L = L / n;
   
   return L;
 }

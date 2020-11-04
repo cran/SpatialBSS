@@ -3,7 +3,8 @@
 #-------------------------------------------#
 sbss <- function(x, ...) UseMethod("sbss")
 
-sbss.default <- function(x, coords, kernel_type = c('ring', 'ball', 'gauss'), kernel_parameters, ordered = TRUE, kernel_list = NULL, ...) {
+sbss.default <- function(x, coords, kernel_type = c('ring', 'ball', 'gauss'), kernel_parameters, 
+                         lcov = c('lcov', 'ldiff'), ordered = TRUE, kernel_list = NULL, ...) {
   # kernel matrix
   kernel_type <- match.arg(kernel_type)
   
@@ -21,47 +22,19 @@ sbss.default <- function(x, coords, kernel_type = c('ring', 'ball', 'gauss'), ke
   x_w <- white_data(x)
   
   # spatial covariance matrices
-  cov_sp_list <- local_covariance_matrix(x = x_w$x_w, kernel_list = kernel_list, whitening = FALSE)
+  cov_sp_list <- local_covariance_matrix(x = x_w$x_w, kernel_list = kernel_list, lcov = lcov, whitening = FALSE)
   
   # diagonalization
-  if (k == 1) {
-    cov_sp_evd <- eigen(cov_sp_list[[1]], symmetric = TRUE)
-    u <- cov_sp_evd$vectors
-    d <- diag(cov_sp_evd$values)
-    
-  } else {
-    jade <- JADE::frjd(do.call(rbind, cov_sp_list), ...)
-    u <- jade$V
-    d <- jade$D
-  }
-  
+  cov_sp_d <- diag_scatters(cov_list = cov_sp_list, ordered = ordered, ...)
+
   # unmixing matrix
-  w <- crossprod(u, x_w$s_inv_sqrt)
-  w_inv <- crossprod(x_w$s_sqrt, u)
+  w <- crossprod(cov_sp_d$u, x_w$s_inv_sqrt)
+  w_inv <- crossprod(x_w$s_sqrt, cov_sp_d$u)
   s <- tcrossprod(x_w$x_0, w)
-  
-  # ordering by squared (pseudo) eigenvalues
-  p <- ncol(x)
-  if (ordered) {
-    diags_mat <- matrix(0, nrow = k, ncol = p)
-    for (idx in 1:k) {
-      diags_mat[idx, ] <- diag(d[(1:p) + (idx - 1) * p, ])
-    }
-    diag_order <- order(colSums(diags_mat ^ 2), decreasing = TRUE)
-    
-    u <- u[, diag_order]
-    w <- w[diag_order, ]
-    w_inv <- w_inv[, diag_order]
-    s <- s[, diag_order]
-    
-    for (idx in 1:k) {
-      d[(1:p) + (idx - 1) * p, ] <- d[(1:p) + (idx - 1) * p, ][diag_order, diag_order]
-    }
-  }
-  colnames(s) <- paste0('IC.', 1:p)
+  colnames(s) <- paste0('IC.', 1:ncol(s))
   
   # results
-  return(structure(list(s = s, coords = coords, w = w, w_inv = w_inv, d = d, x_mu = x_w$mu, cov_inv_sqrt = x_w$s_inv_sqrt), class = "sbss"))
+  return(structure(list(s = s, coords = coords, w = w, w_inv = w_inv, d = cov_sp_d$d, x_mu = x_w$mu, cov_inv_sqrt = x_w$s_inv_sqrt), class = "sbss"))
 }
 
 sbss.SpatialPointsDataFrame <- function(x, ...) {

@@ -10,7 +10,8 @@ Computation of Local Covariance Matrices
 }
 
 \usage{
-local_covariance_matrix(x, kernel_list, whitening = TRUE)
+local_covariance_matrix(x, kernel_list, lcov = c('lcov', 'ldiff'), 
+                        whitening = TRUE)
 }
 \arguments{
   \item{x}{
@@ -19,19 +20,26 @@ a numeric matrix of dimension \code{c(n, p)} where the \code{p} columns correspo
   \item{kernel_list}{
 a list with spatial kernel matrices of dimension \code{c(n, n)}. This list is usually computed with the function \code{\link{spatial_kernel_matrix}}.
 }
+  \item{lcov}{
+a string indicating which type of local covariance matrix to use. Either \code{'lcov'} (default) or \code{'ldiff'}.
+}
   \item{whitening}{
 logical. If \code{TRUE} the data \code{x} is whitened prior computing the local covariance matrices. Default is \code{TRUE}.
 }
 }
 
 \details{
-Formally, local covariance matrices are defined as:
-\deqn{ M(f) = 1/n \sum_{i,j} f(d_{i,j}) x(s_i) x(s_j)' .}
-Where \eqn{d_{i,j} \ge 0} correspond to the pairwise distances between coordinates, \eqn{x(s_i)} are the \code{p} random field values at location \eqn{s_i} and the kernel function \eqn{f(d)} determines the locality. The function \code{local_covariance_matrix} computes these local covariance matrices for a given random field and given spatial kernel matrices, see also \code{\link{spatial_kernel_matrix}} for details. 
+Two versions of local covariance matrices are implemented, the argument \code{lcov} determines which version is used:
+\itemize{
+  \item \code{'lcov'}: \deqn{ LCov(f) = 1/n \sum_{i,j} f(d_{i,j}) x(s_i) x(s_j)' ,}
+  \item \code{'ldiff'}: \deqn{ LDiff(f) = 1/n \sum_{i,j} f(d_{i,j}) (x(s_i)-x(s_j)) (x(s_i)-x(s_j))' .}
+}
+
+Where \eqn{d_{i,j} \ge 0} correspond to the pairwise distances between coordinates, \eqn{x(s_i)} are the \code{p} random field values at location \eqn{s_i} and the kernel function \eqn{f(d)} determines the locality. The function \code{local_covariance_matrix} computes local covariance matrices for a given random field and given spatial kernel matrices, the type of computed local covariance matrices is determined by the argument \code{'lcov'}. See also \code{\link{spatial_kernel_matrix}} for details. 
 }
 
 \value{
-\code{local_covariance_matrix} returns a list of equal length as the argument \code{kernel_list}. Each list entry is a numeric matrix of dimension \code{c(p, p)} corresponding to a local covariance matrix.
+\code{local_covariance_matrix} returns a list of equal length as the argument \code{kernel_list}. Each list entry is a numeric matrix of dimension \code{c(p, p)} corresponding to a local covariance matrix. The list has the attribute \code{'lcov'} which equals the function argument \code{lcov}.
 }
 
 \references{
@@ -67,6 +75,13 @@ ring_kernel_list <-
   spatial_kernel_matrix(coords, 'ring', kernel_params_ring)
 loc_cov_ring <- 
   local_covariance_matrix(x = field, kernel_list = ring_kernel_list)
+  
+# computing two ring kernel matrices and corresponding local difference matrices
+kernel_params_ring <- c(0, 0.5, 0.5, 2)
+ring_kernel_list <- 
+  spatial_kernel_matrix(coords, 'ring', kernel_params_ring)
+loc_cov_ring <- 
+  local_covariance_matrix(x = field, kernel_list = ring_kernel_list, lcov = 'ldiff')
 
 # computing three ball kernel matrices and corresponding local covariance matrices
 kernel_params_ball <- c(0.5, 1, 2)

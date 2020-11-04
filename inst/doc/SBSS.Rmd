@@ -38,17 +38,26 @@ $$
 $$
 where $\Omega$ is the so called mixing matrix and $\mu$ is some constant shift. The latent field $Z(s)$ shows a clearer structure than the original field $X(s)$. In particular, $Z(s)$ is assumed to have zero mean and unit covariance and the components of $Z(s)$ show no spatial cross-dependence. Meaning that $\text{E}\{ Z(s) \} = 0$, $\text{Cov} \{ Z(s) \} = \text{E} \{ Z(s) Z(s)^\top \} = I_p$ for all $s \in \mathcal{S}$ and $\text{Cov} \{ Z(s_1), Z(s_2) \} = \text{E} \{ Z(s_1) Z(s_2)^\top \} = D(\lVert s_1 - s_2 \rVert)$ for all $s_1, s_2 \in \mathcal{S}$ where $D$ is some diagonal matrix. Hence, $Z(s)$ is also a weakly-stationary random field.
 
-Recovering the source random field $Z(s)$ is particularly beneficial in spatial prediction tasks such as various kriging methods. As the latent field shows no cross-dependence, univariate kriging can be applied on each component of $Z(s)$ individually. This approach avoids the complex modeling of cross-covariances and the use of CoKriging. In order to recover an estimate of the unmixing matrix $W = \Omega ^ {-1}$ local covariance matrices are used.
+Recovering the source random field $Z(s)$ is particularly beneficial in spatial prediction tasks such as various kriging methods. As the latent field shows no cross-dependence, univariate kriging can be applied on each component of $Z(s)$ individually. This approach avoids the complex modeling of cross-covariances and the use of CoKriging. 
+
+Moreover, an estimate of the unmixing matrix $W = \Omega ^ {-1}$ can be used for interpretation similar to PCA. The loadings are given by $W$ but in contrast to PCA the present method explicitly uses the spatial dependence of the data.
+
+In order to recover an estimate of the unmixing matrix $W = \Omega ^ {-1}$ local covariance matrices are used.
 
 ## Local Covariance Matrices and Spatial Kernel Functions 
 
-The aim of local covariance matrices is to quantify spatial dependence. This is achieved by the following definition:
+The aim of local covariance matrices is to quantify spatial dependence. Local covariance matrices are defined as
 
 $$
-M(f) = \frac{1}{n} \sum_{i=1}^n \sum_{j=1}^n f(s_i - s_j) X(s_i) X(s_j)^\top  
+LCov(f) = \frac{1}{n} \sum_{i=1}^n \sum_{j=1}^n f(s_i - s_j) X(s_i) X(s_j)^\top , 
+$$
+and local difference matrices write as
+
+$$
+LDiff(f) = \frac{1}{n} \sum_{i=1}^n \sum_{j=1}^n f(s_i - s_j) (X(s_i) - X(s_j)) (X(s_i) - X(s_j))^\top.
 $$
 
-where the sums range over all points in the domain and the locality is defined by the kernel function $f$. For each location $s_i$ in the considered domain spatial dependence to each point $s_j$ is computed by the inner sum. The kernel function $f(s_i - s_j)$ determines which points $s_j$ are considered based on the distance between them. Whereas, the outer sum averages the inner sums of all points $s_i$ which leads to an average local spatial dependence measure for the random field $X(s)$. Note that if $f(x) = f_0(x) = I( x = 0)$ where $I(x)$ is the indicator function, then $M(f_0)$ reduces to an ordinary covariance estimator. Three options for the kernel function are suggested:
+Here, the sums range over all points in the domain and the locality is defined by the kernel function $f$. For each location $s_i$ in the considered domain spatial dependence to each point $s_j$ is computed by the inner sum. The kernel function $f(s_i - s_j)$ determines which points $s_j$ are considered based on the distance between them. Whereas, the outer sum averages the inner sums of all points $s_i$ which leads to an average local spatial dependence measure for the random field $X(s)$. The difference between $LCov(f)$ and $LDiff(f)$ matrices lies in the fact that $LDiff(f)$ matrices are more robust when the random field shows a smooth trend compared to $LCov(f)$ matrices. Note that if $f(x) = f_0(x) = I( x = 0)$ where $I(x)$ is the indicator function, then $LCov(f_0)$ reduces to an ordinary covariance estimator. Three options for the kernel function are suggested:
 
 * Ball: $f(d;r) = I(d \le h)$
 
@@ -60,9 +69,9 @@ where $d=\lVert s_1 - s_2 \rVert$, $\Phi^{-1}(0.95)$ is the 95\% quantile of the
 
 ## How the estimate the unmixing matrix?
 
-One key result that is used in almost every BSS method states that when the data is standardized by $X^{st}(s) = \Sigma^{-1/2} ( X(s) - \text{E}(X(s)))$ then $X^{st}(s) = U Z(s)$, where $U$ is an orthogonal matrix and $\Sigma^{-1/2}$ is the inverse square root of the covariance matrix. This result can be used to reduce the task of finding a general unmixing matrix to a two step approach of first standardizing the data and then only finding an orthogonal matrix $U$. Hence, these considerations lead to the following algorithm for SBSS:
+One key result that is used in almost every BSS method states that when the data is standardized by $X^{st}(s) = \Sigma^{-1/2} ( X(s) - \text{E}(X(s)))$ then $X^{st}(s) = U Z(s)$, where $U$ is an orthogonal matrix and $\Sigma^{-1/2}$ is the inverse square root of the covariance matrix. This result can be used to reduce the task of finding a general unmixing matrix to a two step approach of first standardizing the data and then only finding an orthogonal matrix $U$. In the following, $M(f)$ denote either $LCov(f)$ or $LDiff(f)$ matrices. These considerations lead to the following algorithm for SBSS:
 
-1. Standardizing the random field $X(s)$ by $X^{st}(s) = M(f_0)^{-1/2} ( X(s) - \overline{X})$, where $\overline{X} = \frac{1}{n} \sum_{i = 1}^n X(s_i)$.
+1. Standardizing the random field $X(s)$ by $X^{st}(s) = LCov(f_0)^{-1/2} ( X(s) - \overline{X})$, where $\overline{X} = \frac{1}{n} \sum_{i = 1}^n X(s_i)$.
 
 2. For a certain choice of kernel functions $f_1,\dots,f_k$ the corresponding local scatter matrices $M(f_1),\dots,M(f_k)$ are computed with the whitened data $X^{st}(s)$ from the first step. Then an orthogonal matrix $U$ is computed by:
 
@@ -74,7 +83,7 @@ One key result that is used in almost every BSS method states that when the data
 \]
   Hence, this approach finds an orthogonal matrix $U$ that makes all considered local covariance matrices as diagonal as possible.
 
-The estimated unmixing matrix is given by $\hat{W} = U^\top M(f_0)^{-1/2}$. In summary, this approach leads to a latent field $Z(s)$ that shows minimal spatial cross-dependence. The package `SpatialBSS` implements the above discussed approaches and is presented below.
+The estimated unmixing matrix is given by $\hat{W} = U^\top LCov(f_0)^{-1/2}$. In summary, this approach leads to a latent field $Z(s)$ that shows minimal spatial cross-dependence. The package `SpatialBSS` implements the above discussed approaches and is presented below.
 
 # Spatial Blind Source Separation with the function `sbss`
 
@@ -166,6 +175,15 @@ if (requireNamespace('sf', quietly = TRUE)) {
 
 For the two examples above `coords` is not needed as the spatial objects carry the coordinates of field already. Furthermore, the entry `s` of an object of class `'sbss'` is now of the same class as the argument `x` of the `sbss` call.
 
+For all the above calls of `sbss` $LCov(f)$ matrices were used. The argument `lcov` of `sbss` defines which type of local scatter matrix is used, the default is `'lcov'` which leads to the use of $LCov(f)$ matrices and `'ldiff'` leads to the use of $LDiff(f)$ matrices. In the following, the same `sbss` call is made but with the use of $LDiff(f)$ matrices.
+
+```{r sbss_func_ldiff}
+sbss_res_lcov <- sbss(x = field, coords = coords, 
+                 kernel_type = kernel_type, lcov = 'ldiff',
+                 kernel_parameters = kernel_parameters)
+```
+
+
 # Computing spatial kernel matrices
 
 Internally, `sbss` computes for each chosen kernel function a matrix of dimension `c(n,n)` where each entry corresponds to the kernel function evaluated at the distance between two points. Hence, the entry i,j corresponds to $f(s_i - s_j)$ in the definition of local covariance matrices above. `spatial_kernel_matrices` is called inside `sbss` and therefore needs `coords`, `kernel_type` and `kernel_parameters` as described above. For the former example:
@@ -191,4 +209,9 @@ local_cov <- local_covariance_matrix(field, kernel_list =  ring_kernel_matrices,
                                      whitening = TRUE)
 ```
 
-The output of this function is a list of same length as `kernel_list`, where each entry is a local covariance matrix for the corresponding spatial kernel matrix. 
+The output of this function is a list of same length as `kernel_list`, where each entry is a local covariance matrix for the corresponding spatial kernel matrix. Again `local_covariance_matrix` has the argument `lcov` that determines which version of the local scatter matrices is computed. The default is `'lcov'` which leads to the use of $LCov(f)$ matrices and `'ldiff'` leads to the use of $LDiff(f)$ matrices. In the following is the same call of `local_covariance_matrix` but $LDiff(f)$ matrices are computed
+
+```{r ldiff_mat}
+local_diff <- local_covariance_matrix(field, kernel_list =  ring_kernel_matrices, 
+                                      lcov = 'ldiff', whitening = TRUE)
+```
