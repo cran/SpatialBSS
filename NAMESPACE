@@ -1,6 +1,6 @@
 importFrom(graphics, plot)
 
-export(sbss, spatial_kernel_matrix, local_covariance_matrix)
+export(sbss, spatial_kernel_matrix, local_covariance_matrix, white_data)
 S3method(sbss, default)
 S3method(sbss, SpatialPointsDataFrame)
 S3method(sbss, sf)

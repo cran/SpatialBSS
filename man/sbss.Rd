@@ -16,8 +16,8 @@ Spatial Blind Source Separation
 sbss(x, ...)
 
 \method{sbss}{default}(x, coords, kernel_type = c('ring', 'ball', 'gauss'), 
-     kernel_parameters, lcov = c('lcov', 'ldiff'), 
-     ordered = TRUE, kernel_list = NULL, \dots)
+     kernel_parameters, lcov = c('lcov', 'ldiff'), ordered = TRUE, 
+     kernel_list = NULL, rob_whitening = FALSE, \dots)
 \method{sbss}{SpatialPointsDataFrame}(x, \dots)
 \method{sbss}{sf}(x, \dots)
 }
@@ -44,6 +44,9 @@ logical. If \code{TRUE} the entries of the latent field are ordered by the sum o
   \item{kernel_list}{
 a list of spatial kernel matrices with dimension \code{c(n,n)}, see details. Usually computed by the function \code{\link{spatial_kernel_matrix}}.
 }
+  \item{rob_whitening}{
+logical. If \code{TRUE} whitening is carried out with respect to the first spatial scatter matrix and not the sample covariance matrix, see details. Default is \code{FALSE}.
+}
   \item{\dots}{
 further arguments for the fast real joint diagonalization algorithm that jointly diagonalizes the local covariance matrices. See details and \code{\link[JADE]{frjd}}.
 }
@@ -52,10 +55,11 @@ further arguments for the fast real joint diagonalization algorithm that jointly
 \details{
 Two versions of local covariance matrices are implemented, the argument \code{lcov} determines which version is used:
 \itemize{
-  \item \code{'lcov'}: \deqn{ LCov(f) = 1/n \sum_{i,j} f(d_{i,j}) x(s_i) x(s_j)' ,}
+  \item \code{'lcov'}: \deqn{ LCov(f) = 1/n \sum_{i,j} f(d_{i,j}) (x(s_i)-\bar{x}) (x(s_j)-\bar{x})' ,}
   \item \code{'ldiff'}: \deqn{ LDiff(f) = 1/n \sum_{i,j} f(d_{i,j}) (x(s_i)-x(s_j)) (x(s_i)-x(s_j))' .}
 }
-Where \eqn{d_{i,j} \ge 0} correspond to the pairwise distances between coordinates, \eqn{x(s_i)} are the \code{p} random field values at location \eqn{s_i} and the kernel function \eqn{f(d)} determines the locality. LDiff matrices are supposed to be more robust when the random field shows a smooth trend. The following kernel functions are implemented and chosen with the argument \code{kernel_type}:
+
+Where \eqn{d_{i,j} \ge 0} correspond to the pairwise distances between coordinates, \eqn{x(s_i)} are the \code{p} random field values at location \eqn{s_i}, \eqn{\bar{x}} is the sample mean vector, and the kernel function \eqn{f(d)} determines the locality. LDiff matrices are supposed to be more robust when the random field shows a smooth trend. The following kernel functions are implemented and chosen with the argument \code{kernel_type}:
 \itemize{
   \item \code{'ring'}: parameters are inner radius \eqn{r_i} and outer radius \eqn{r_o}, with \eqn{r_i < r_o}, and \eqn{r_i, r_o \ge 0}: \deqn{f(d;r_i, r_o) = I(r_i < d \le r_o)}
   \item \code{'ball'}: parameter is the radius \eqn{r}, with \eqn{r \ge 0}: \deqn{f(d;r) = I(d \le r)}
@@ -65,6 +69,8 @@ Where \eqn{d_{i,j} \ge 0} correspond to the pairwise distances between coordinat
 The argument \code{kernel_type} determines the used kernel function as presented above, the argument \code{kernel_parameters} gives the corresponding parameters for the kernel function. Specifically, if \code{kernel_type} equals \code{'ball'} or \code{'gauss'} then \code{kernel_parameters} is a numeric vector where each entry corresponds to one parameter. Hence, \code{length(kernel_parameters)} local covariance matrices are used. Whereas, if \code{kernel_type} equals \code{'ring'}, then \code{kernel_parameters} must be a numeric vector of even length where subsequently the inner and outer radii must be given (informally: \code{c(r_i1, r_o1, r_i2, r_o2, \dots)}). In that case \code{length(kernel_parameters) / 2} local covariance matrices are used.
 
 Internally, \code{sbss} calls \code{\link{spatial_kernel_matrix}} to compute a list of \code{c(n,n)} kernel matrices based on the parameters given, where each entry of those matrices corresponds to \eqn{f(d_{i,j})}. Alternatively, such a list of kernel matrices can be given directly to the function \code{sbss} via the \code{kernel_list} argument. This is useful when \code{sbss} is called numerous times with the same coordinates/kernel functions as the computation of the kernel matrices is then done only once prior the actual \code{sbss} calls. For details see also \code{\link{spatial_kernel_matrix}}.
+
+\code{rob_whitening} determines which scatter is used for the whitening step. If \code{TRUE}, whitening is carried out with respect to the scatter matrix defined by the \code{lcov} argument, where the kernel function is given by the argument \code{kernel_type} and the parameters correspond to the first occuring in the argument \code{kernel_parameters}. Therefore, at least two different kernel parameters need to be given. Note that only \eqn{LDiff(f)} matrices are positive definite, hence whitening with \code{'lcov'} is likely to produce an error. If the argument is \code{FALSE}, whitening is carried out with respect to the usual sample covariance matrix. \code{sbss} internally calls \code{\link{white_data}}.
 
 If more than one local covariance matrix is used \code{sbss} jointly diagonalizes these matrices with the function \code{\link[JADE]{frjd}}. \code{\dots} provides arguments for \code{frjd}, useful arguments might be:
 \itemize{
@@ -107,9 +113,11 @@ If more than one local covariance matrix is used \code{sbss} jointly diagonalize
 }
 
 \references{
-Bachoc, F., Genton, M. G, Nordhausen, K., Ruiz-Gazen, A. and Virta, J. (2020), \emph{Spatial Blind Source Separation}, Biometrika, \url{https://doi.org/10.1093/biomet/asz079}, \cr <doi:10.1093/biomet/asz079>.
+Muehlmann, C., Filzmoser, P. and Nordhausen, K. (2021), \emph{Spatial Blind Source Separation in the Presence of a Drift}, Submitted for publication.
 
-Nordhausen, K., Oja, H., Filzmoser, P., Reimann, C. (2015), \emph{Blind Source Separation for Spatial Compositional Data}, Mathematical Geosciences 47, 753-770, \url{https://doi.org/10.1007/s11004-014-9559-5}, <https://doi.org/10.1007/s11004-014-9559-5>.
+Bachoc, F., Genton, M. G, Nordhausen, K., Ruiz-Gazen, A. and Virta, J. (2020), \emph{Spatial Blind Source Separation}, Biometrika, \doi{10.1093/biomet/asz079}.
+
+Nordhausen, K., Oja, H., Filzmoser, P., Reimann, C. (2015), \emph{Blind Source Separation for Spatial Compositional Data}, Mathematical Geosciences 47, 753-770, \doi{10.1007/s11004-014-9559-5}.
 
 }
 

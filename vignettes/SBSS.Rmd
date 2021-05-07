@@ -49,7 +49,7 @@ In order to recover an estimate of the unmixing matrix $W = \Omega ^ {-1}$ local
 The aim of local covariance matrices is to quantify spatial dependence. Local covariance matrices are defined as
 
 $$
-LCov(f) = \frac{1}{n} \sum_{i=1}^n \sum_{j=1}^n f(s_i - s_j) X(s_i) X(s_j)^\top , 
+LCov(f) = \frac{1}{n} \sum_{i=1}^n \sum_{j=1}^n f(s_i - s_j) (X(s_i)-\bar{X}) (X(s_j)-\bar{X})^\top , 
 $$
 and local difference matrices write as
 
@@ -57,7 +57,7 @@ $$
 LDiff(f) = \frac{1}{n} \sum_{i=1}^n \sum_{j=1}^n f(s_i - s_j) (X(s_i) - X(s_j)) (X(s_i) - X(s_j))^\top.
 $$
 
-Here, the sums range over all points in the domain and the locality is defined by the kernel function $f$. For each location $s_i$ in the considered domain spatial dependence to each point $s_j$ is computed by the inner sum. The kernel function $f(s_i - s_j)$ determines which points $s_j$ are considered based on the distance between them. Whereas, the outer sum averages the inner sums of all points $s_i$ which leads to an average local spatial dependence measure for the random field $X(s)$. The difference between $LCov(f)$ and $LDiff(f)$ matrices lies in the fact that $LDiff(f)$ matrices are more robust when the random field shows a smooth trend compared to $LCov(f)$ matrices. Note that if $f(x) = f_0(x) = I( x = 0)$ where $I(x)$ is the indicator function, then $LCov(f_0)$ reduces to an ordinary covariance estimator. Three options for the kernel function are suggested:
+Here, the sums range over all points in the domain and the locality is defined by the kernel function $f$. For each location $s_i$ in the considered domain spatial dependence to each point $s_j$ is computed by the inner sum. The kernel function $f(s_i - s_j)$ determines which points $s_j$ are considered based on the distance between them. Whereas, the outer sum averages the inner sums of all points $s_i$ which leads to an average local spatial dependence measure for the random field $X(s)$. The difference between $LCov(f)$ and $LDiff(f)$ matrices lies in the fact that $LDiff(f)$ matrices are more robust when the random field shows a smooth trend compared to $LCov(f)$ matrices, as the former is computed by the difference of observations and the latter by differences to the sample mean vector $\bar{X}$. Note that if $f(x) = f_0(x) = I( x = 0)$ where $I(x)$ is the indicator function, then $LCov(f_0)$ reduces to an ordinary covariance estimator. Three options for the kernel function are suggested:
 
 * Ball: $f(d;r) = I(d \le h)$
 
@@ -139,6 +139,8 @@ The output of `sbss` is a list of class `'sbss'` that contains the quantities wh
 
 `sbss` uses an algorithm that is based on Givens rotation to jointly diagonalize the local covariance matrices, it is implemented by the function `frjd` from the package `JADE`. With the `...` argument of `sbss` further arguments can be given to `frjd`.
 
+## Functions for class `'sbss'`
+
 To examine the estimated latent random field, the `plot` function can be used. Internally, it casts the latent field to an object of class `'SpatialPointsDataFrame'` and uses `spplot` from the package `sp`. `...` can be used to provide further arguments to `spplot`:
 
 ```{r sbss_plot}
@@ -175,6 +177,8 @@ if (requireNamespace('sf', quietly = TRUE)) {
 
 For the two examples above `coords` is not needed as the spatial objects carry the coordinates of field already. Furthermore, the entry `s` of an object of class `'sbss'` is now of the same class as the argument `x` of the `sbss` call.
 
+## Alternative local scatter matrix
+
 For all the above calls of `sbss` $LCov(f)$ matrices were used. The argument `lcov` of `sbss` defines which type of local scatter matrix is used, the default is `'lcov'` which leads to the use of $LCov(f)$ matrices and `'ldiff'` leads to the use of $LDiff(f)$ matrices. In the following, the same `sbss` call is made but with the use of $LDiff(f)$ matrices.
 
 ```{r sbss_func_ldiff}
@@ -183,6 +187,15 @@ sbss_res_lcov <- sbss(x = field, coords = coords,
                  kernel_parameters = kernel_parameters)
 ```
 
+$LDiff(f)$ matrices might be favorable when a smooth drift is present in the data. The idea of $LDiff(f)$ matrices is that the difference of observations in close vicinity cancels out the drift, therefore the change of the drift function in space must be somewhat mild. Still, in the whitening step the estimation of the covariance matrix can be corrupted by the drift. Therefore, whitening can be carried out with respect to some $LDiff(f)$ matrix. This is controlled by the `rob_whitening` argument.
+
+```{r sbss_func_ldiff_rob}
+sbss_res_lcov <- sbss(x = field, coords = coords, rob_whitening = TRUE,
+                 kernel_type = kernel_type, lcov = 'ldiff',
+                 kernel_parameters = kernel_parameters)
+```
+
+In the call above whitening is done with respect to a $LDiff(f)$ matrix where the kernel function and parameters are the first occurring in the argument `kernel_parameters`. In principle this can be also done with $LCov(f)$ matrices but as $LCov(f)$ matrices are not necessarily positive definite there is a high chance that the inversion produces an error.
 
 # Computing spatial kernel matrices
 
@@ -202,16 +215,16 @@ Note that the `coords` argument is not needed as the spatial kernel matrices are
 
 # Computing local covariance matrices
 
-With the function `local_covariance_matrix` local covariance matrices can be computed based on spatial kernel matrices. This function gets the values of the random field and kernel matrices (usually the output of `spatial_kernel_matrix`) as input arguments. Furthermore, with the argument `whitening` it can be set if the random field is standardized prior computing local covariance matrices. For the former example:
+With the function `local_covariance_matrix` local covariance matrices can be computed based on spatial kernel matrices. This function gets the values of the random field and kernel matrices (usually the output of `spatial_kernel_matrix`) as input arguments. Furthermore, with the argument `center` it can be set if the random field is centered prior computing local covariance matrices. For the former example:
 
 ```{r lcov_mat}
-local_cov <- local_covariance_matrix(field, kernel_list =  ring_kernel_matrices, 
-                                     whitening = TRUE)
+local_cov <- local_covariance_matrix(field, kernel_list = ring_kernel_matrices, 
+                                     center = TRUE)
 ```
 
-The output of this function is a list of same length as `kernel_list`, where each entry is a local covariance matrix for the corresponding spatial kernel matrix. Again `local_covariance_matrix` has the argument `lcov` that determines which version of the local scatter matrices is computed. The default is `'lcov'` which leads to the use of $LCov(f)$ matrices and `'ldiff'` leads to the use of $LDiff(f)$ matrices. In the following is the same call of `local_covariance_matrix` but $LDiff(f)$ matrices are computed
+The output of this function is a list of same length as `kernel_list`, where each entry is a local covariance matrix for the corresponding spatial kernel matrix. Again `local_covariance_matrix` has the argument `lcov` that determines which version of the local scatter matrices is computed. The default is `'lcov'` which leads to the use of $LCov(f)$ matrices and `'ldiff'` leads to the use of $LDiff(f)$ matrices. In the following is the same call of `local_covariance_matrix` but $LDiff(f)$ matrices are computed (note that for $LDiff(f)$ matrices centering has no impact):
 
 ```{r ldiff_mat}
 local_diff <- local_covariance_matrix(field, kernel_list =  ring_kernel_matrices, 
-                                      lcov = 'ldiff', whitening = TRUE)
+                                      lcov = 'ldiff', center = TRUE)
 ```

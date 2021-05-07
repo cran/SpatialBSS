@@ -29,10 +29,11 @@ a numeric vector that gives the parameters for the kernel function. At least len
 \details{
 Two versions of local covariance matrices can be defined:
 \itemize{
-  \item \code{'lcov'}: \deqn{ LCov(f) = 1/n \sum_{i,j} f(d_{i,j}) x(s_i) x(s_j)' ,}
+  \item \code{'lcov'}: \deqn{ LCov(f) = 1/n \sum_{i,j} f(d_{i,j}) (x(s_i)-\bar{x}) (x(s_j)-\bar{x})' ,}
   \item \code{'ldiff'}: \deqn{ LDiff(f) = 1/n \sum_{i,j} f(d_{i,j}) (x(s_i)-x(s_j)) (x(s_i)-x(s_j))' .}
 }
-Where \eqn{d_{i,j} \ge 0} correspond to the pairwise distances between coordinates, \eqn{x(s_i)} are the \code{p} random field values at location \eqn{s_i} and the kernel function \eqn{f(d)} determines the locality. The function \code{spatial_kernel_matrix} computes a list of \code{c(n,n)} matrices where each entry of these matrices correspond to the spatial kernel function evaluated at the distance between two points, mathematically the entry ij of each kernel matrix is \eqn{f(d_{i,j})}. The following kernel functions are implemented and chosen with the argument \code{kernel_type}:
+
+Where \eqn{d_{i,j} \ge 0} correspond to the pairwise distances between coordinates, \eqn{x(s_i)} are the \code{p} random field values at location \eqn{s_i}, \eqn{\bar{x}} is the sample mean vector, and the kernel function \eqn{f(d)} determines the locality. The function \code{spatial_kernel_matrix} computes a list of \code{c(n,n)} matrices where each entry of these matrices correspond to the spatial kernel function evaluated at the distance between two points, mathematically the entry ij of each kernel matrix is \eqn{f(d_{i,j})}. The following kernel functions are implemented and chosen with the argument \code{kernel_type}:
 \itemize{
   \item \code{'ring'}: parameters are inner radius \eqn{r_i} and outer radius \eqn{r_o}, with \eqn{r_i < r_o}, and \eqn{r_i, r_o \ge 0}: \deqn{f(d;r_i, r_o) = I(r_i < d \le r_o)}
   \item \code{'ball'}: parameter is the radius \eqn{r}, with \eqn{r \ge 0}: \deqn{f(d;r) = I(d \le r)}
@@ -49,7 +50,9 @@ The output of this function can be used with the function \code{\link{sbss}} to 
 }
 
 \references{
-Bachoc, F., Genton, M. G, Nordhausen, K., Ruiz-Gazen, A. and Virta, J. (2020), \emph{Spatial Blind Source Separation}, Biometrika, \url{https://doi.org/10.1093/biomet/asz079}, \cr <doi:10.1093/biomet/asz079>.
+Muehlmann, C., Filzmoser, P. and Nordhausen, K. (2021), \emph{Spatial Blind Source Separation in the Presence of a Drift}, Submitted for publication.
+
+Bachoc, F., Genton, M. G, Nordhausen, K., Ruiz-Gazen, A. and Virta, J. (2020), \emph{Spatial Blind Source Separation}, Biometrika, \doi{10.1093/biomet/asz079}.
 }
 
 \seealso{

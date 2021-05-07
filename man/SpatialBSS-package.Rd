@@ -13,8 +13,8 @@ Blind source separation for multivariate spatial data based on simultaneous/join
 \tabular{ll}{
 Package: \tab SpatialBSS\cr
 Type: \tab Package\cr
-Version: \tab 0.9-0 \cr
-Date: \tab 2020-11-04\cr
+Version: \tab 0.10-0 \cr
+Date: \tab 2021-05-04\cr
 License: \tab GPL (>= 2)\cr
 }
 
@@ -37,9 +37,11 @@ Christoph Muehlmann \email{christoph.muehlmann@tuwien.ac.at}
 }
 
 \references{
-Bachoc, F., Genton, M. G, Nordhausen, K., Ruiz-Gazen, A. and Virta, J. (2020), \emph{Spatial Blind Source Separation}, Biometrika, \url{https://doi.org/10.1093/biomet/asz079}, \cr <doi:10.1093/biomet/asz079>.
+Muehlmann, C., Filzmoser, P. and Nordhausen, K. (2021), \emph{Spatial Blind Source Separation in the Presence of a Drift}, Submitted for publication.
 
-Nordhausen, K., Oja, H., Filzmoser, P., Reimann, C. (2015), \emph{Blind Source Separation for Spatial Compositional Data}, Mathematical Geosciences 47, 753-770, \url{https://doi.org/10.1007/s11004-014-9559-5}, <https://doi.org/10.1007/s11004-014-9559-5>.
+Bachoc, F., Genton, M. G, Nordhausen, K., Ruiz-Gazen, A. and Virta, J. (2020), \emph{Spatial Blind Source Separation}, Biometrika, \doi{10.1093/biomet/asz079}.
+
+Nordhausen, K., Oja, H., Filzmoser, P., Reimann, C. (2015), \emph{Blind Source Separation for Spatial Compositional Data}, Mathematical Geosciences 47, 753-770, \doi{10.1007/s11004-014-9559-5}.
 
 }
 

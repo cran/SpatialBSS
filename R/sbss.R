@@ -4,9 +4,10 @@
 sbss <- function(x, ...) UseMethod("sbss")
 
 sbss.default <- function(x, coords, kernel_type = c('ring', 'ball', 'gauss'), kernel_parameters, 
-                         lcov = c('lcov', 'ldiff'), ordered = TRUE, kernel_list = NULL, ...) {
+                         lcov = c('lcov', 'ldiff'), ordered = TRUE, kernel_list = NULL, rob_whitening = FALSE, ...) {
   # kernel matrix
   kernel_type <- match.arg(kernel_type)
+  lcov <- match.arg(lcov)
   
   if (!missing(coords) && !missing(kernel_parameters) && is.vector(kernel_parameters)) {
     kernel_list <- spatial_kernel_matrix(coords, kernel_type = kernel_type, kernel_parameters = kernel_parameters)
@@ -19,10 +20,13 @@ sbss.default <- function(x, coords, kernel_type = c('ring', 'ball', 'gauss'), ke
   k <- length(kernel_list)
   
   # standardize data
-  x_w <- white_data(x)
+  x_w <- white_data(x, rob_whitening = rob_whitening, lcov = lcov, kernel_mat = kernel_list[[1]])
+  if (rob_whitening) {
+    kernel_list[[1]] <- NULL
+  }
   
   # spatial covariance matrices
-  cov_sp_list <- local_covariance_matrix(x = x_w$x_w, kernel_list = kernel_list, lcov = lcov, whitening = FALSE)
+  cov_sp_list <- local_covariance_matrix(x = x_w$x_w, kernel_list = kernel_list, lcov = lcov, center = FALSE)
   
   # diagonalization
   cov_sp_d <- diag_scatters(cov_list = cov_sp_list, ordered = ordered, ...)

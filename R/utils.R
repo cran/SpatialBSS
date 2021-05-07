@@ -1,11 +1,15 @@
-white_data <- function(x) {
-  n <- nrow(x)
+white_data <- function(x, rob_whitening = FALSE, lcov = c('lcov', 'ldiff'), kernel_mat = numeric(0)) {
+  lcov <- match.arg(lcov)
   
   mu <- colMeans(x)
   x_0 <- sweep(x, MARGIN = 2, STATS = mu, FUN = '-')
   
-  s <- crossprod(x_0) / (n - 1)
-  
+  if (rob_whitening) {
+    s <- local_covariance_matrix(x, list(kernel_mat), lcov = lcov, center = TRUE)[[1]]
+  } else {
+    s <- crossprod(x_0) / (nrow(x) - 1)
+  }
+
   s_evd <- eigen(s, symmetric = TRUE)
   s_inv_sqrt <- s_evd$vectors %*% tcrossprod(diag(1 / sqrt(s_evd$values)), s_evd$vectors)
   s_sqrt <- s_evd$vectors %*% tcrossprod(diag(sqrt(s_evd$values)), s_evd$vectors)
@@ -38,11 +42,12 @@ spatial_kernel_matrix <- function(coords, kernel_type = c('ring', 'ball', 'gauss
   return(kernel_list)
 }
 
-local_covariance_matrix <- function(x, kernel_list, lcov = c('lcov', 'ldiff'), whitening = TRUE) {
+local_covariance_matrix <- function(x, kernel_list, lcov = c('lcov', 'ldiff'), 
+                                    center = TRUE) {
   lcov <- match.arg(lcov)
   
-  if (whitening) {
-    x <- white_data(x)$x_w
+  if (center) {
+    x <- white_data(x)$x_0
   }
   
   cov_sp_list <- switch(lcov,

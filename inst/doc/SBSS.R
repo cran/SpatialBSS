@@ -58,6 +58,11 @@ sbss_res_lcov <- sbss(x = field, coords = coords,
                  kernel_type = kernel_type, lcov = 'ldiff',
                  kernel_parameters = kernel_parameters)
 
+## ----sbss_func_ldiff_rob------------------------------------------------------
+sbss_res_lcov <- sbss(x = field, coords = coords, rob_whitening = TRUE,
+                 kernel_type = kernel_type, lcov = 'ldiff',
+                 kernel_parameters = kernel_parameters)
+
 ## ----k_mat--------------------------------------------------------------------
 ring_kernel_matrices <- spatial_kernel_matrix(coords, kernel_type, kernel_parameters)
 
@@ -65,10 +70,10 @@ ring_kernel_matrices <- spatial_kernel_matrix(coords, kernel_type, kernel_parame
 sbss_k <- sbss(x = field, kernel_list = ring_kernel_matrices)
 
 ## ----lcov_mat-----------------------------------------------------------------
-local_cov <- local_covariance_matrix(field, kernel_list =  ring_kernel_matrices, 
-                                     whitening = TRUE)
+local_cov <- local_covariance_matrix(field, kernel_list = ring_kernel_matrices, 
+                                     center = TRUE)
 
 ## ----ldiff_mat----------------------------------------------------------------
 local_diff <- local_covariance_matrix(field, kernel_list =  ring_kernel_matrices, 
-                                      lcov = 'ldiff', whitening = TRUE)
+                                      lcov = 'ldiff', center = TRUE)
 
