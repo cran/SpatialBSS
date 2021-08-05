@@ -10,7 +10,7 @@ Computation of Local Covariance Matrices
 }
 
 \usage{
-local_covariance_matrix(x, kernel_list, lcov = c('lcov', 'ldiff'), 
+local_covariance_matrix(x, kernel_list, lcov = c('lcov', 'ldiff', 'lcov_norm'), 
                         center = TRUE)
 }
 \arguments{
@@ -32,10 +32,11 @@ logical. If \code{TRUE} the data \code{x} is centered prior computing the local 
 Two versions of local covariance matrices are implemented, the argument \code{lcov} determines which version is used:
 \itemize{
   \item \code{'lcov'}: \deqn{ LCov(f) = 1/n \sum_{i,j} f(d_{i,j}) (x(s_i)-\bar{x}) (x(s_j)-\bar{x})' ,}
-  \item \code{'ldiff'}: \deqn{ LDiff(f) = 1/n \sum_{i,j} f(d_{i,j}) (x(s_i)-x(s_j)) (x(s_i)-x(s_j))' .}
+  \item \code{'ldiff'}: \deqn{ LDiff(f) = 1/n \sum_{i,j} f(d_{i,j}) (x(s_i)-x(s_j)) (x(s_i)-x(s_j))',}
+    \item \code{'lcov_norm'}: \deqn{ LCov^*(f) = 1/(n F^{1/2}_{f,n}) \sum_{i,j} f(d_{i,j}) (x(s_i)-\bar{x}) (x(s_j)-\bar{x})',} with \deqn{ F_{f,n} = 1 / n \sum_{i,j} f^2(d_{i,j}).}
 }
 
-Where \eqn{d_{i,j} \ge 0} correspond to the pairwise distances between coordinates, \eqn{x(s_i)} are the \code{p} random field values at location \eqn{s_i}, \eqn{\bar{x}} is the sample mean vector, and the kernel function \eqn{f(d)} determines the locality. The function \code{local_covariance_matrix} computes local covariance matrices for a given random field and given spatial kernel matrices, the type of computed local covariance matrices is determined by the argument \code{'lcov'}. If the argument \code{center} equals \code{FALSE} then the centering in the above formula for \eqn{LCov(f)} is not carried out. See also \code{\link{spatial_kernel_matrix}} for details. 
+Where \eqn{d_{i,j} \ge 0} correspond to the pairwise distances between coordinates, \eqn{x(s_i)} are the \code{p} random field values at location \eqn{s_i}, \eqn{\bar{x}} is the sample mean vector, and the kernel function \eqn{f(d)} determines the locality. The choice \code{'lcov_norm'} is useful when testing for the actual signal dimension of the latent field, see \code{\link{sbss_asymp}} and \code{\link{sbss_boot}}. The function \code{local_covariance_matrix} computes local covariance matrices for a given random field and given spatial kernel matrices, the type of computed local covariance matrices is determined by the argument \code{'lcov'}. If the argument \code{center} equals \code{FALSE} then the centering in the above formula for \eqn{LCov(f)} is not carried out. See also \code{\link{spatial_kernel_matrix}} for details. 
 }
 
 \value{

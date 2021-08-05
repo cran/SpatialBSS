@@ -1,3 +1,10 @@
+Version 0.11-0:
+
+* Adding the function sbss_asymp which carries out an asymptotic test for white noise dimensions
+* Adding the function sbss_boot which tests for white noise components based on bootstrap strategies
+* Adding a new local covariance matrix
+* Updated help files
+
 Version 0.10-0:
 
 * Adding the option of robust whitening to sbss function

@@ -4,19 +4,20 @@
 sbss <- function(x, ...) UseMethod("sbss")
 
 sbss.default <- function(x, coords, kernel_type = c('ring', 'ball', 'gauss'), kernel_parameters, 
-                         lcov = c('lcov', 'ldiff'), ordered = TRUE, kernel_list = NULL, rob_whitening = FALSE, ...) {
+                         lcov = c('lcov', 'ldiff', 'lcov_norm'), ordered = TRUE, kernel_list = NULL, rob_whitening = FALSE, ...) {
   # kernel matrix
   kernel_type <- match.arg(kernel_type)
   lcov <- match.arg(lcov)
   
   if (!missing(coords) && !missing(kernel_parameters) && is.vector(kernel_parameters)) {
     kernel_list <- spatial_kernel_matrix(coords, kernel_type = kernel_type, kernel_parameters = kernel_parameters)
-  } else if (!is.null(kernel_list)) {
-    coords <- NULL
+  } else if (!is.null(kernel_list) && is.list(kernel_list)) {
+    if (missing(coords)) {
+      coords <- NULL
+    }
   } else {
-    stop('Invalid input for kernels. Either coords (or a spatial object) kernel_type and kernel_parameters (as vector) or kernel_list needs to be given.')
+    stop('Invalid input for kernels. Either coords (or a spatial object for the argument x), kernel_type and kernel_parameters (as vector) or kernel_list needs to be given.')
   }
-  
   k <- length(kernel_list)
   
   # standardize data

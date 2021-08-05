@@ -1,4 +1,7 @@
-white_data <- function(x, rob_whitening = FALSE, lcov = c('lcov', 'ldiff'), kernel_mat = numeric(0)) {
+#------------------------------------------------#
+#   data whitening
+#------------------------------------------------#
+white_data <- function(x, rob_whitening = FALSE, lcov = c('lcov', 'ldiff', 'lcov_norm'), kernel_mat = numeric(0)) {
   lcov <- match.arg(lcov)
   
   mu <- colMeans(x)
@@ -20,6 +23,9 @@ white_data <- function(x, rob_whitening = FALSE, lcov = c('lcov', 'ldiff'), kern
   return(list(mu = mu, x_0 = x_0, x_w = x_w, s_inv_sqrt = s_inv_sqrt, s_sqrt = s_sqrt))
 }
 
+#------------------------------------------------#
+#   spatial kernel function computation
+#------------------------------------------------#
 spatial_kernel_matrix <- function(coords, kernel_type = c('ring', 'ball', 'gauss'), kernel_parameters) {
   kernel_type <- match.arg(kernel_type)
   
@@ -42,7 +48,10 @@ spatial_kernel_matrix <- function(coords, kernel_type = c('ring', 'ball', 'gauss
   return(kernel_list)
 }
 
-local_covariance_matrix <- function(x, kernel_list, lcov = c('lcov', 'ldiff'), 
+#------------------------------------------------#
+#  local covariance matrix computation
+#------------------------------------------------#
+local_covariance_matrix <- function(x, kernel_list, lcov = c('lcov', 'ldiff', 'lcov_norm'), 
                                     center = TRUE) {
   lcov <- match.arg(lcov)
   
@@ -51,8 +60,9 @@ local_covariance_matrix <- function(x, kernel_list, lcov = c('lcov', 'ldiff'),
   }
   
   cov_sp_list <- switch(lcov,
-    'lcov'  = lapply(kernel_list, function(k_mat) sp_lcov_sparse(x = x, k = k_mat)),
-    'ldiff' = lapply(kernel_list, function(k_mat) sp_ldiff_sparse(x = x, k = k_mat))
+    'lcov'      = lapply(kernel_list, function(k_mat) sp_lcov_sparse(x = x, k = k_mat)),
+    'ldiff'     = lapply(kernel_list, function(k_mat) sp_ldiff_sparse(x = x, k = k_mat)),
+    'lcov_norm' = lapply(kernel_list, function(k_mat) sp_lcov_sparse(x = x, k = k_mat) * sqrt(nrow(k_mat) / sum(k_mat ^ 2)))
   )
   
   cov_sp_list <- lapply(cov_sp_list, function(x) (x + t(x)) / 2)
@@ -71,6 +81,9 @@ predict_idw <- function(vals, coords, p, n_grid) {
   return(list(vals_pred_idw = vals_pred, coords_pred_idw = coords_pred))
 }
 
+#------------------------------------------------#
+#  function for scatter diagonalization
+#------------------------------------------------#
 diag_scatters <- function(cov_list, ordered, ...) {
   decr <- if (attr(cov_list, 'lcov') == 'ldiff') FALSE else TRUE
   k <- length(cov_list)
@@ -99,3 +112,20 @@ diag_scatters <- function(cov_list, ordered, ...) {
   
   return(list(u = u, d = d))
 }
+
+#------------------------------------------------#
+#   test statistic for noise dimension tests
+#------------------------------------------------#
+test_stat <- function(d, q, n) {
+  p <- ncol(d)
+  k <- nrow(d) / p
+  t <- 0
+  
+  for (idx in 1:k) {
+    t <- t + sum(d[((q + 1):p) + (idx - 1) * p, (q + 1):p] ^ 2)
+  }
+  
+  t <- t * n / 2
+  return(t)
+}
+

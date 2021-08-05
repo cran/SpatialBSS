@@ -10,7 +10,7 @@ Different Approaches of Data Whitening
 }
 
 \usage{
-white_data(x, rob_whitening = FALSE, lcov = c('lcov', 'ldiff'), 
+white_data(x, rob_whitening = FALSE, lcov = c('lcov', 'ldiff', 'lcov_norm'), 
            kernel_mat = numeric(0))
 }
 
@@ -33,10 +33,11 @@ a spatial kernel matrix with dimension \code{c(n,n)}, see details. Usually compu
 The inverse square root of a positive definite matrix \eqn{M} with eigenvalue decomposition \eqn{UDU'} is defined as \eqn{M^{-1/2} = UD^{-1/2}U'}. \code{white_data} whitens the data by \eqn{M^{-1/2}(x - mu)} where \eqn{mu} are the column means of \code{x} and the matrix \eqn{M} is as follows. If the argument \code{rob_whitening} is \code{FALSE} then \eqn{M} is the sample covariance matrix. If the argument \code{rob_whitening} is \code{TRUE}, then the argument \code{lcov} determines the matrix \eqn{M} to be one of the following local scatter matrices:
 \itemize{
   \item \code{'lcov'}: \deqn{ LCov(f) = 1/n \sum_{i,j} f(d_{i,j}) (x(s_i)-\bar{x}) (x(s_j)-\bar{x})' ,}
-  \item \code{'ldiff'}: \deqn{ LDiff(f) = 1/n \sum_{i,j} f(d_{i,j}) (x(s_i)-x(s_j)) (x(s_i)-x(s_j))' .}
+  \item \code{'ldiff'}: \deqn{ LDiff(f) = 1/n \sum_{i,j} f(d_{i,j}) (x(s_i)-x(s_j)) (x(s_i)-x(s_j))',}
+  \item \code{'lcov_norm'}: \deqn{ LCov^*(f) = 1/(n F^{1/2}_{f,n}) \sum_{i,j} f(d_{i,j}) (x(s_i)-\bar{x}) (x(s_j)-\bar{x})',} with \deqn{ F_{f,n} = 1 / n \sum_{i,j} f^2(d_{i,j}).}
 }
 
-Where \eqn{d_{i,j} \ge 0} correspond to the pairwise distances between coordinates, \eqn{x(s_i)} are the \code{p} random field values at location \eqn{s_i}, \eqn{\bar{x}} is the sample mean vector, and the kernel function \eqn{f(d)} determines the locality. See also \code{\link{sbss}} for details.
+Where \eqn{d_{i,j} \ge 0} correspond to the pairwise distances between coordinates, \eqn{x(s_i)} are the \code{p} random field values at location \eqn{s_i}, \eqn{\bar{x}} is the sample mean vector, and the kernel function \eqn{f(d)} determines the locality. The choice \code{'lcov_norm'} is useful when testing for the actual signal dimension of the latent field, see \code{\link{sbss_asymp}} and \code{\link{sbss_boot}}. See also \code{\link{sbss}} for details.
 
 Note that \eqn{LCov(f)} are usually not positive definite, therefore in that case the matrix cannot be inverted and an error is produced. Whitening with \eqn{LCov(f)} matrices might be favourable in the presence of spatially uncorrelated noise, and whitening with \eqn{LDiff(f)} might be favourable when a non-constant smooth drift is present in the data.
 
