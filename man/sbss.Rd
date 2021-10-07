@@ -36,7 +36,7 @@ a string indicating which kernel function to use. Either \code{'ring'} (default)
 a numeric vector that gives the parameters for the kernel function. At least length of one for \code{'ball'} and \code{'gauss'} or two for \code{'ring'} kernel, see details.
 }
   \item{lcov}{
-a string indicating which type of local covariance matrix to use. Either \code{'lcov'} (default) or \code{'ldiff'}.
+a string indicating which type of local covariance matrix to use. Either \code{'lcov'} (default), \code{'ldiff'} or \code{'lcov_norm'}. See \code{\link{sbss_asymp}} for details on the latter option.
 }
   \item{ordered}{
 logical. If \code{TRUE} the entries of the latent field are ordered by the sum of squared (pseudo-)eigenvalues of the diagonalized local covariance matrix/matrices. Default is \code{TRUE}.
@@ -53,7 +53,7 @@ further arguments for the fast real joint diagonalization algorithm that jointly
 }
 
 \details{
-Two versions of local covariance matrices are implemented, the argument \code{lcov} determines which version is used:
+Three versions of local covariance matrices are implemented, the argument \code{lcov} determines which version is used:
 \itemize{
   \item \code{'lcov'}: \deqn{ LCov(f) = 1/n \sum_{i,j} f(d_{i,j}) (x(s_i)-\bar{x}) (x(s_j)-\bar{x})' ,}
   \item \code{'ldiff'}: \deqn{ LDiff(f) = 1/n \sum_{i,j} f(d_{i,j}) (x(s_i)-x(s_j)) (x(s_i)-x(s_j))',}
@@ -114,13 +114,13 @@ If more than one local covariance matrix is used \code{sbss} jointly diagonalize
 }
 
 \references{
-Muehlmann, C., Filzmoser, P. and Nordhausen, K. (2021), \emph{Spatial Blind Source Separation in the Presence of a Drift}, Submitted for publication.
+Muehlmann, C., Filzmoser, P. and Nordhausen, K. (2021), \emph{Spatial Blind Source Separation in the Presence of a Drift}, Submitted for publication. Preprint available at \url{https://arxiv.org/abs/2108.13813}.
 
-Bachoc, F., Genton, M. G, Nordhausen, K., Ruiz-Gazen, A. and Virta, J. (2020), \emph{Spatial Blind Source Separation}, Biometrika, \doi{10.1093/biomet/asz079}.
+Bachoc, F., Genton, M. G, Nordhausen, K., Ruiz-Gazen, A. and Virta, J. (2020), \emph{Spatial Blind Source Separation}, Biometrika, 107, 627-646, \doi{10.1093/biomet/asz079}.
 
 Nordhausen, K., Oja, H., Filzmoser, P., Reimann, C. (2015), \emph{Blind Source Separation for Spatial Compositional Data}, Mathematical Geosciences 47, 753-770, \doi{10.1007/s11004-014-9559-5}.
 
-Muehlmann, C., Bachoc, F. and Nordhausen, K. (2021), \emph{Test of the Latent Dimension of a Spatial Blind Source Separation Model}, Submitted for publication. Preprint available at \url{https://arxiv.org/abs/2011.01711}.
+Muehlmann, C., Bachoc, F., Nordhausen, K. and Yi, M. (2021), \emph{Test of the Latent Dimension of a Spatial Blind Source Separation Model}, Submitted for publication. Preprint available at \url{https://arxiv.org/abs/2011.01711}.
 }
 
 \seealso{
@@ -134,7 +134,7 @@ dim(coords) <- c(1000, 2)
 
 # simulate random field
 if (!requireNamespace('RandomFields', quietly = TRUE)) {
-  stop('Please install the package RandomFields to run the example code.')
+  message('Please install the package RandomFields to run the example code.')
 } else {
   RandomFields::RFoptions(spConform = FALSE)
   field_1 <- RandomFields::RFsimulate(model = RandomFields::RMexp(), 
@@ -144,34 +144,33 @@ if (!requireNamespace('RandomFields', quietly = TRUE)) {
   field_3 <- RandomFields::RFsimulate(model = RandomFields::RMwhittle(nu = 2),  
                                       x = coords)
   field <- cbind(field_1, field_2, field_3)
+
+  # apply sbss with three ring kernels
+  kernel_parameters <- c(0, 1, 1, 2, 2, 3)
+  sbss_result <- 
+    sbss(field, coords, kernel_type = 'ring', kernel_parameters = kernel_parameters)
+  
+  # print object
+  print(sbss_result)
+  
+  # plot latent field
+  plot(sbss_result, colorkey = TRUE, as.table = TRUE, cex = 1)
+  
+  # predict latent fields on grid
+  predict(sbss_result, colorkey = TRUE, as.table = TRUE, cex = 1)
+  
+  # unmixing matrix
+  w_unmix <- coef(sbss_result)
+  
+  # apply the same sbss with a kernel list
+  kernel_list <- spatial_kernel_matrix(coords, kernel_type = 'ring', kernel_parameters)
+  sbss_result_k <- sbss(field, kernel_list = kernel_list)
+  
+  # apply sbss with three ring kernels and local difference matrices
+  sbss_result_ldiff <- 
+    sbss(field, coords, kernel_type = 'ring', 
+         kernel_parameters = kernel_parameters, lcov = 'ldiff')
 }
-
-# apply sbss with three ring kernels
-kernel_parameters <- c(0, 1, 1, 2, 2, 3)
-sbss_result <- 
-  sbss(field, coords, kernel_type = 'ring', kernel_parameters = kernel_parameters)
-
-# print object
-print(sbss_result)
-
-# plot latent field
-plot(sbss_result, colorkey = TRUE, as.table = TRUE, cex = 1)
-
-# predict latent fields on grid
-predict(sbss_result, colorkey = TRUE, as.table = TRUE, cex = 1)
-
-# unmixing matrix
-w_unmix <- coef(sbss_result)
-
-# apply the same sbss with a kernel list
-kernel_list <- spatial_kernel_matrix(coords, kernel_type = 'ring', kernel_parameters)
-sbss_result_k <- sbss(field, kernel_list = kernel_list)
-
-# apply sbss with three ring kernels and local difference matrices
-sbss_result_ldiff <- 
-  sbss(field, coords, kernel_type = 'ring', 
-       kernel_parameters = kernel_parameters, lcov = 'ldiff')
-
 
 }
 

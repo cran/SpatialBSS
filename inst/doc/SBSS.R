@@ -18,7 +18,9 @@ if (requireNamespace("RandomFields", quietly = TRUE)) {
                                       x = coords)
   field <- tcrossprod(cbind(field_1, field_2, field_3), mix_mat)
 } else {
-  stop('The package RandomFields is needed to run this example.')
+  message('The package RandomFields is needed to run this example.')
+  field <- rnorm(nrow(coords) * 3)
+  dim(field) <- c(nrow(coords), 3)
 }
 
 ## -----------------------------------------------------------------------------
@@ -49,7 +51,7 @@ if (requireNamespace('sf', quietly = TRUE)) {
   res_sbss_sf <- sbss(x = field_sf, kernel_type = kernel_type,
                       kernel_parameters = kernel_parameters)
 } else {
-  stop('Please install the package sf to run the example code.')
+  message('Please install the package sf to run the example code.')
 }
 
 

@@ -57,6 +57,10 @@ The argument \code{kernel_mat} is a matrix of dimension \code{c(n,n)} where each
   a numeric matrix of dimension \code{c(n, p)} containing the whitened data of \code{x}.
 }
 
+  \item{s}{
+  a numeric matrix of dimension \code{c(p, p)} which is the scatter matrix \eqn{M}.
+}
+
   \item{s_inv_sqrt}{
   a numeric matrix of dimension \code{c(p, p)} which equals the inverse square root of the scatter matrix \eqn{M} used for whitening.
 }
@@ -68,9 +72,9 @@ The argument \code{kernel_mat} is a matrix of dimension \code{c(n,n)} where each
 }
 
 \references{
-Muehlmann, C., Filzmoser, P. and Nordhausen, K. (2021), \emph{Spatial Blind Source Separation in the Presence of a Drift}, Submitted for publication.
+Muehlmann, C., Filzmoser, P. and Nordhausen, K. (2021), \emph{Spatial Blind Source Separation in the Presence of a Drift}, Submitted for publication. Preprint available at \url{https://arxiv.org/abs/2108.13813}.
 
-Bachoc, F., Genton, M. G, Nordhausen, K., Ruiz-Gazen, A. and Virta, J. (2020), \emph{Spatial Blind Source Separation}, Biometrika, \doi{10.1093/biomet/asz079}.
+Bachoc, F., Genton, M. G, Nordhausen, K., Ruiz-Gazen, A. and Virta, J. (2020), \emph{Spatial Blind Source Separation}, Biometrika, 107, 627-646, \doi{10.1093/biomet/asz079}.
 }
 
 \seealso{
@@ -84,7 +88,7 @@ dim(coords) <- c(100, 2)
 
 # simulate random field
 if (!requireNamespace('RandomFields', quietly = TRUE)) {
-  stop('Please install the package RandomFields to run the example code.')
+  message('Please install the package RandomFields to run the example code.')
 } else {
   RandomFields::RFoptions(spConform = FALSE)
   field_1 <- RandomFields::RFsimulate(model = RandomFields::RMexp(), 
@@ -94,17 +98,17 @@ if (!requireNamespace('RandomFields', quietly = TRUE)) {
   field_3 <- RandomFields::RFsimulate(model = RandomFields::RMwhittle(nu = 2),  
                                       x = coords)
   field <-  cbind(field_1, field_2, field_3) %*% matrix(rnorm(9), 3, 3) 
+
+  # white the data with the usual sample covariance 
+  x_w_1 <- white_data(field)
+  
+  # white the data with a ldiff matrix and ring kernel
+  kernel_params_ring <- c(0, 1)
+  ring_kernel_list <- 
+    spatial_kernel_matrix(coords, 'ring', kernel_params_ring)
+  x_w_2 <- white_data(field, rob_whitening = TRUE,
+    lcov = 'ldiff', kernel_mat = ring_kernel_list[[1]])
 }
-
-# white the data with the usual sample covariance 
-x_w_1 <- white_data(field)
-
-# white the data with a ldiff matrix and ring kernel
-kernel_params_ring <- c(0, 1)
-ring_kernel_list <- 
-  spatial_kernel_matrix(coords, 'ring', kernel_params_ring)
-x_w_2 <- white_data(field, rob_whitening = TRUE,
-  lcov = 'ldiff', kernel_mat = ring_kernel_list[[1]])
 }
 
 \keyword{ array }

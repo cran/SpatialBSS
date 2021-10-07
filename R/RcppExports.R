@@ -17,6 +17,10 @@ k_mat_exp <- function(coords, h) {
     .Call(`_SpatialBSS_k_mat_exp`, coords, h)
 }
 
+idx_per_block <- function(coords, coords_block, d) {
+    .Call(`_SpatialBSS_idx_per_block`, coords, coords_block, d)
+}
+
 sp_lcov_sparse <- function(x, k) {
     .Call(`_SpatialBSS_sp_lcov_sparse`, x, k)
 }

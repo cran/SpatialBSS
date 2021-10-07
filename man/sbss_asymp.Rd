@@ -117,7 +117,7 @@ If more than one local covariance matrix is used \code{sbss_asymp} jointly diago
 }
 
 \references{
-Muehlmann, C., Bachoc, F. and Nordhausen, K. (2021), \emph{Test of the Latent Dimension of a Spatial Blind Source Separation Model}, Submitted for publication. Preprint available at \url{https://arxiv.org/abs/2011.01711}.
+Muehlmann, C., Bachoc, F., Nordhausen, K. and Yi, M. (2021), \emph{Test of the Latent Dimension of a Spatial Blind Source Separation Model}, Submitted for publication. Preprint available at \url{https://arxiv.org/abs/2011.01711}.
 
 }
 
@@ -134,45 +134,44 @@ dim(coords) <- c(n, 2)
 
 # simulate random field
 if (!requireNamespace('RandomFields', quietly = TRUE)) {
-  stop('Please install the package RandomFields to run the example code.')
+  message('Please install the package RandomFields to run the example code.')
 } else {
   RandomFields::RFoptions(spConform = FALSE)
   field_1 <- RandomFields::RFsimulate(model = RandomFields::RMexp(), 
                                       x = coords)
   field_2 <- RandomFields::RFsimulate(model = RandomFields::RMspheric(), 
                                       x = coords)
-}
-field_3 <- rnorm(n)
-field_4 <- rnorm(n)
-
-latent_field <- cbind(field_1, field_2, field_3, field_4)
-mixing_matrix <- matrix(rnorm(16), 4, 4)
-observed_field <- latent_field \%*\% t(mixing_matrix)
-
-# apply the asymptotic test for a hypothetical latent white noise dimension of q
-# q can lie between 0 and 3 in this case
-# using one ring kernel function and the null hypothesis q = 1
-asymp_res_1 <- 
-  sbss_asymp(observed_field, coords, q = 1, kernel_parameters = c(0, 1))
-
-# using two ring kernel functions and the null hypothesis q = 3
-asymp_res_2 <- 
-  sbss_asymp(observed_field, coords, q = 3, kernel_parameters = c(0, 1, 1, 2))
+  field_3 <- rnorm(n)
+  field_4 <- rnorm(n)
   
-# the result is of class sbss_test which is inherited from htest and sbss
-# print object (print method for an object of class htest)
-print(asymp_res_1)
-print(asymp_res_2)
-
-# plot latent field (plot method for an object of class sbss)
-plot(asymp_res_1, colorkey = TRUE, as.table = TRUE, cex = 1)
-
-# predict latent fields on grid (predict method for an object of class sbss)
-predict(asymp_res_1, colorkey = TRUE, as.table = TRUE, cex = 1)
-
-# unmixing matrix (coef method for an object of class sbss)
-w_unmix <- coef(asymp_res_1)
-
+  latent_field <- cbind(field_1, field_2, field_3, field_4)
+  mixing_matrix <- matrix(rnorm(16), 4, 4)
+  observed_field <- latent_field \%*\% t(mixing_matrix)
+  
+  # apply the asymptotic test for a hypothetical latent white noise dimension of q
+  # q can lie between 0 and 3 in this case
+  # using one ring kernel function and the null hypothesis q = 1
+  asymp_res_1 <- 
+    sbss_asymp(observed_field, coords, q = 1, kernel_parameters = c(0, 1))
+  
+  # using two ring kernel functions and the null hypothesis q = 3
+  asymp_res_2 <- 
+    sbss_asymp(observed_field, coords, q = 3, kernel_parameters = c(0, 1, 1, 2))
+    
+  # the result is of class sbss_test which is inherited from htest and sbss
+  # print object (print method for an object of class htest)
+  print(asymp_res_1)
+  print(asymp_res_2)
+  
+  # plot latent field (plot method for an object of class sbss)
+  plot(asymp_res_1, colorkey = TRUE, as.table = TRUE, cex = 1)
+  
+  # predict latent fields on grid (predict method for an object of class sbss)
+  predict(asymp_res_1, colorkey = TRUE, as.table = TRUE, cex = 1)
+  
+  # unmixing matrix (coef method for an object of class sbss)
+  w_unmix <- coef(asymp_res_1)
+}
 
 }
 

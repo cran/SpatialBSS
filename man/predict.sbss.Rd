@@ -56,7 +56,7 @@ dim(coords) <- c(1000, 2)
 
 # simulate random field
 if (!requireNamespace('RandomFields', quietly = TRUE)) {
-  stop('Please install the package RandomFields to run the example code.')
+  message('Please install the package RandomFields to run the example code.')
 } else {
   RandomFields::RFoptions(spConform = FALSE)
   field_1 <- RandomFields::RFsimulate(model = RandomFields::RMexp(), 
@@ -66,28 +66,27 @@ if (!requireNamespace('RandomFields', quietly = TRUE)) {
   field_3 <- RandomFields::RFsimulate(model = RandomFields::RMwhittle(nu = 2),  
                                       x = coords)
   field <- cbind(field_1, field_2, field_3)
+
+  # apply sbss with three ring kernels
+  kernel_borders <- c(0, 1, 1, 2, 2, 4)
+  res_sbss <-  sbss(field, coords, 'ring', kernel_borders)
+  
+  # predict latent fields on grid with default settings
+  predict(res_sbss)
+  
+  # predict latent fields on grid with custom plotting settings
+  predict(res_sbss, colorkey = TRUE, as.table = TRUE, cex = 1)
+  
+  # predict latent fields on a 60x60 grid
+  predict(res_sbss, n_grid = 60, colorkey = TRUE, as.table = TRUE, cex = 1)
+  
+  # predict latent fields with a higher IDW power parameter
+  predict(res_sbss, p = 10, colorkey = TRUE, as.table = TRUE, cex = 1)
+  
+  # predict latent fields and save the predictions
+  predict_list <- predict(res_sbss, p = 5, colorkey = TRUE, as.table = TRUE, cex = 1)
 }
-
-# apply sbss with three ring kernels
-kernel_borders <- c(0, 1, 1, 2, 2, 4)
-res_sbss <-  sbss(field, coords, 'ring', kernel_borders)
-
-# predict latent fields on grid with default settings
-predict(res_sbss)
-
-# predict latent fields on grid with custom plotting settings
-predict(res_sbss, colorkey = TRUE, as.table = TRUE, cex = 1)
-
-# predict latent fields on a 60x60 grid
-predict(res_sbss, n_grid = 60, colorkey = TRUE, as.table = TRUE, cex = 1)
-
-# predict latent fields with a higher IDW power parameter
-predict(res_sbss, p = 10, colorkey = TRUE, as.table = TRUE, cex = 1)
-
-# predict latent fields and save the predictions
-predict_list <- predict(res_sbss, p = 5, colorkey = TRUE, as.table = TRUE, cex = 1)
 }
-
 \seealso{
 \code{\link{sbss}}, \code{\link{plot.sbss}}, \code{\link[sp]{spplot}}, \code{\link[sf]{plot.sf}}
 }

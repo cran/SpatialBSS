@@ -44,9 +44,9 @@ Where \eqn{d_{i,j} \ge 0} correspond to the pairwise distances between coordinat
 }
 
 \references{
-Muehlmann, C., Filzmoser, P. and Nordhausen, K. (2021), \emph{Spatial Blind Source Separation in the Presence of a Drift}, Submitted for publication.
+Muehlmann, C., Filzmoser, P. and Nordhausen, K. (2021), \emph{Spatial Blind Source Separation in the Presence of a Drift}, Submitted for publication. Preprint available at \url{https://arxiv.org/abs/2108.13813}.
 
-Bachoc, F., Genton, M. G, Nordhausen, K., Ruiz-Gazen, A. and Virta, J. (2020), \emph{Spatial Blind Source Separation}, Biometrika, \doi{10.1093/biomet/asz079}.
+Bachoc, F., Genton, M. G, Nordhausen, K., Ruiz-Gazen, A. and Virta, J. (2020), \emph{Spatial Blind Source Separation}, Biometrika, 107, 627-646, \doi{10.1093/biomet/asz079}.
 
 }
 
@@ -61,7 +61,7 @@ dim(coords) <- c(1000, 2)
 
 # simulate random field
 if (!requireNamespace('RandomFields', quietly = TRUE)) {
-  stop('Please install the package RandomFields to run the example code.')
+  message('Please install the package RandomFields to run the example code.')
 } else {
   RandomFields::RFoptions(spConform = FALSE)
   field_1 <- RandomFields::RFsimulate(model = RandomFields::RMexp(), 
@@ -71,34 +71,34 @@ if (!requireNamespace('RandomFields', quietly = TRUE)) {
   field_3 <- RandomFields::RFsimulate(model = RandomFields::RMwhittle(nu = 2),  
                                       x = coords)
   field <- cbind(field_1, field_2, field_3)
-}
 
-# computing two ring kernel matrices and corresponding local covariance matrices
-kernel_params_ring <- c(0, 0.5, 0.5, 2)
-ring_kernel_list <- 
-  spatial_kernel_matrix(coords, 'ring', kernel_params_ring)
-loc_cov_ring <- 
-  local_covariance_matrix(x = field, kernel_list = ring_kernel_list)
+  # computing two ring kernel matrices and corresponding local covariance matrices
+  kernel_params_ring <- c(0, 0.5, 0.5, 2)
+  ring_kernel_list <- 
+    spatial_kernel_matrix(coords, 'ring', kernel_params_ring)
+  loc_cov_ring <- 
+    local_covariance_matrix(x = field, kernel_list = ring_kernel_list)
+    
+  # computing two ring kernel matrices and corresponding local difference matrices
+  kernel_params_ring <- c(0, 0.5, 0.5, 2)
+  ring_kernel_list <- 
+    spatial_kernel_matrix(coords, 'ring', kernel_params_ring)
+  loc_cov_ring <- 
+    local_covariance_matrix(x = field, kernel_list = ring_kernel_list, lcov = 'ldiff')
   
-# computing two ring kernel matrices and corresponding local difference matrices
-kernel_params_ring <- c(0, 0.5, 0.5, 2)
-ring_kernel_list <- 
-  spatial_kernel_matrix(coords, 'ring', kernel_params_ring)
-loc_cov_ring <- 
-  local_covariance_matrix(x = field, kernel_list = ring_kernel_list, lcov = 'ldiff')
-
-# computing three ball kernel matrices and corresponding local covariance matrices
-kernel_params_ball <- c(0.5, 1, 2)
-ball_kernel_list <- 
-  spatial_kernel_matrix(coords, 'ball', kernel_params_ball)
-loc_cov_ball <- 
-  local_covariance_matrix(x = field, kernel_list = ball_kernel_list)
-
-# computing three gauss kernel matrices and corresponding local covariance matrices
-kernel_params_gauss <- c(0.5, 1, 2)
-gauss_kernel_list <- 
-  spatial_kernel_matrix(coords, 'gauss', kernel_params_gauss)
-loc_cov_gauss <- 
-  local_covariance_matrix(x = field, kernel_list = gauss_kernel_list)
+  # computing three ball kernel matrices and corresponding local covariance matrices
+  kernel_params_ball <- c(0.5, 1, 2)
+  ball_kernel_list <- 
+    spatial_kernel_matrix(coords, 'ball', kernel_params_ball)
+  loc_cov_ball <- 
+    local_covariance_matrix(x = field, kernel_list = ball_kernel_list)
+  
+  # computing three gauss kernel matrices and corresponding local covariance matrices
+  kernel_params_gauss <- c(0.5, 1, 2)
+  gauss_kernel_list <- 
+    spatial_kernel_matrix(coords, 'gauss', kernel_params_gauss)
+  loc_cov_gauss <- 
+    local_covariance_matrix(x = field, kernel_list = gauss_kernel_list)
+}
 }
 

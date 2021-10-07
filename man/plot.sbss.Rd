@@ -40,7 +40,7 @@ dim(coords) <- c(1000, 2)
 
 # simulate random field
 if (!requireNamespace('RandomFields', quietly = TRUE)) {
-  stop('Please install the package RandomFields to run the example code.')
+  message('Please install the package RandomFields to run the example code.')
 } else {
   RandomFields::RFoptions(spConform = FALSE)
   field_1 <- RandomFields::RFsimulate(model = RandomFields::RMexp(), 
@@ -50,37 +50,37 @@ if (!requireNamespace('RandomFields', quietly = TRUE)) {
   field_3 <- RandomFields::RFsimulate(model = RandomFields::RMwhittle(nu = 2),  
                                       x = coords)
   field <- cbind(field_1, field_2, field_3)
+
+  # compute ring kernel matrices
+  kernel_parameters <- c(0, 1, 1, 2, 2, 3)
+  ring_kernel_list <- spatial_kernel_matrix(coords, 'ring', kernel_parameters)
+  
+  # apply sbss SpatialPointsDataFrame object
+  field_sp <- sp::SpatialPointsDataFrame(coords = coords, data = data.frame(field))
+  res_sp <- sbss(field_sp, kernel_list = ring_kernel_list)
+  
+  # plot with SpatialPointsDataFrame object
+  plot(res_sp)
+  
+  # plot with SpatialPointsDataFrame object 
+  # and additional arguments for spplot function
+  plot(res_sp, colorkey = TRUE, as.table = TRUE, cex = 1)
+
+  # apply sbss with sf object
+  if (!requireNamespace('sf', quietly = TRUE)) {
+    message('Please install the package sf to run the example code.')
+  } else {
+    field_sf <- sf::st_as_sf(data.frame(coords = coords, field), 
+                             coords = c(1,2))
+    res_sf <- sbss(x = field_sf, kernel_list = ring_kernel_list)
+    
+    # plot with sf object
+    plot(res_sf)
+    
+    # plot with sf object 
+    # and additional arguments for plot.sf function
+    plot(res_sf, axes = TRUE, key.pos = 4)
+  }
 }
-
-# compute ring kernel matrices
-kernel_parameters <- c(0, 1, 1, 2, 2, 3)
-ring_kernel_list <- spatial_kernel_matrix(coords, 'ring', kernel_parameters)
-
-# apply sbss SpatialPointsDataFrame object
-field_sp <- sp::SpatialPointsDataFrame(coords = coords, data = data.frame(field))
-res_sp <- sbss(field_sp, kernel_list = ring_kernel_list)
-
-# plot with SpatialPointsDataFrame object
-plot(res_sp)
-
-# plot with SpatialPointsDataFrame object 
-# and additional arguments for spplot function
-plot(res_sp, colorkey = TRUE, as.table = TRUE, cex = 1)
-
-# apply sbss with sf object
-if (!requireNamespace('sf', quietly = TRUE)) {
-  stop('Please install the package sf to run the example code.')
-} else {
-  field_sf <- sf::st_as_sf(data.frame(coords = coords, field), 
-                           coords = c(1,2))
-  res_sf <- sbss(x = field_sf, kernel_list = ring_kernel_list)
-}
-
-# plot with sf object
-plot(res_sf)
-
-# plot with sf object 
-# and additional arguments for plot.sf function
-plot(res_sf, axes = TRUE, key.pos = 4)
 
 }

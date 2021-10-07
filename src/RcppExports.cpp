@@ -62,6 +62,19 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// idx_per_block
+Rcpp::List idx_per_block(const arma::mat& coords, const arma::mat& coords_block, const int d);
+RcppExport SEXP _SpatialBSS_idx_per_block(SEXP coordsSEXP, SEXP coords_blockSEXP, SEXP dSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type coords(coordsSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type coords_block(coords_blockSEXP);
+    Rcpp::traits::input_parameter< const int >::type d(dSEXP);
+    rcpp_result_gen = Rcpp::wrap(idx_per_block(coords, coords_block, d));
+    return rcpp_result_gen;
+END_RCPP
+}
 // sp_lcov_sparse
 arma::mat sp_lcov_sparse(const arma::mat& x, const arma::mat& k);
 RcppExport SEXP _SpatialBSS_sp_lcov_sparse(SEXP xSEXP, SEXP kSEXP) {
@@ -92,6 +105,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_SpatialBSS_k_mat_ball", (DL_FUNC) &_SpatialBSS_k_mat_ball, 2},
     {"_SpatialBSS_k_mat_ring", (DL_FUNC) &_SpatialBSS_k_mat_ring, 3},
     {"_SpatialBSS_k_mat_exp", (DL_FUNC) &_SpatialBSS_k_mat_exp, 2},
+    {"_SpatialBSS_idx_per_block", (DL_FUNC) &_SpatialBSS_idx_per_block, 3},
     {"_SpatialBSS_sp_lcov_sparse", (DL_FUNC) &_SpatialBSS_sp_lcov_sparse, 2},
     {"_SpatialBSS_sp_ldiff_sparse", (DL_FUNC) &_SpatialBSS_sp_ldiff_sparse, 2},
     {NULL, NULL, 0}

@@ -20,7 +20,7 @@ white_data <- function(x, rob_whitening = FALSE, lcov = c('lcov', 'ldiff', 'lcov
   x_w <- tcrossprod(x_0, s_inv_sqrt)
   colnames(x_w) <- colnames(x_0)
   
-  return(list(mu = mu, x_0 = x_0, x_w = x_w, s_inv_sqrt = s_inv_sqrt, s_sqrt = s_sqrt))
+  return(list(mu = mu, x_0 = x_0, x_w = x_w, s = s, s_inv_sqrt = s_inv_sqrt, s_sqrt = s_sqrt))
 }
 
 #------------------------------------------------#
@@ -85,7 +85,7 @@ predict_idw <- function(vals, coords, p, n_grid) {
 #  function for scatter diagonalization
 #------------------------------------------------#
 diag_scatters <- function(cov_list, ordered, ...) {
-  decr <- if (attr(cov_list, 'lcov') == 'ldiff') FALSE else TRUE
+  decr <- if (attr(cov_list, 'lcov') == 'ldiff' && !is.null(attr(cov_list, 'lcov'))) FALSE else TRUE
   k <- length(cov_list)
   if (k == 1) {
     cov_evd <- eigen(cov_list[[1]], symmetric = TRUE)
@@ -129,3 +129,49 @@ test_stat <- function(d, q, n) {
   return(t)
 }
 
+#------------------------------------------------#
+#   determines the block center coordinates
+#------------------------------------------------#
+block_center_coords <- function(coords, n_block) {
+  x_min <- min(coords[, 1])
+  x_max <- max(coords[, 1])
+  y_min <- min(coords[, 2])
+  y_max <- max(coords[, 2])
+  
+  if (n_block == 'x') {
+    dx <- (x_max - x_min) / 2
+    block_center <- as.matrix(expand.grid((x_min + dx / 2) + (0:1) * dx, 
+                                          (y_min + y_max) / 2))
+  } else if (n_block == 'y') {
+    dy <- (y_max - y_min) / 2
+    block_center <- as.matrix(expand.grid((x_min + x_max) / 2,
+                                          (y_min + dy / 2) + (0:1) * dy))    
+  } else {
+    dx <- (x_max - x_min) / n_block
+    dy <- (y_max - y_min) / n_block
+    block_center <- as.matrix(expand.grid((x_min + dx / 2) + (0:(n_block - 1)) * dx, 
+                                          (y_min + dy / 2) + (0:(n_block - 1)) * dy))
+  }
+  
+  colnames(block_center) <- c('x', 'y')
+  return(block_center)
+}
+
+#------------------------------------------------#
+#   prepares for each coordinate the block index
+#------------------------------------------------#
+make_blocks <- function(x, coords, n_block) {
+  block_center <- block_center_coords(coords, n_block)
+  block_idx <- idx_per_block(coords, block_center, 2L)$block_idx + 1
+  
+  unique_block_idx <- unique(block_idx)
+  
+  x_list <- vector(mode = 'list', length = length(unique_block_idx))
+  coords_list <- vector(mode = 'list', length = length(unique_block_idx))
+  for (idx in 1:length(unique_block_idx)) {
+    x_list[[idx]] <- x[block_idx == unique_block_idx[idx], , drop = FALSE]
+    coords_list[[idx]] <- coords[block_idx == unique_block_idx[idx], , drop = FALSE]
+  }
+  
+  return(list(x_list = x_list, coords_list = coords_list))
+}
