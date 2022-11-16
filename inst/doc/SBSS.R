@@ -2,23 +2,29 @@
 knitr::opts_chunk$set(echo = TRUE)
 
 ## ----sim_coords---------------------------------------------------------------
-coords <- runif(1000 * 2) * 10
+coords <- runif(1000 * 2) * 20
 dim(coords) <- c(1000, 2)
+coords_df <- as.data.frame(coords)
+names(coords_df) <- c("x", "y")
 
 ## ----sim_field----------------------------------------------------------------
-if (requireNamespace("RandomFields", quietly = TRUE)) {
+if (requireNamespace("gstat", quietly = TRUE)) {
   mix_mat <- matrix(rnorm(9), 3, 3)
   
-  RandomFields::RFoptions(spConform = FALSE)
-  field_1 <- RandomFields::RFsimulate(model = RandomFields::RMexp(scale = 0.5), 
-                                      x = coords)
-  field_2 <- RandomFields::RFsimulate(model = RandomFields::RMexp(scale = 1), 
-                                      x = coords)
-  field_3 <- RandomFields::RFsimulate(model = RandomFields::RMspheric(scale = 2), 
-                                      x = coords)
+  model_1 <- gstat::gstat(formula = z ~ 1, locations = ~ x + y, dummy = TRUE, beta = 0, 
+                   model = gstat::vgm(psill = 0.025, range = 1, model = 'Exp'), nmax = 20)
+  model_2 <- gstat::gstat(formula = z ~ 1, locations = ~ x + y, dummy = TRUE, beta = 0, 
+                   model = gstat::vgm(psill = 0.025, range = 1, kappa = 2, model = 'Mat'), 
+                   nmax = 20)
+  model_3 <- gstat::gstat(formula = z ~ 1, locations = ~ x + y, dummy = TRUE, beta = 0, 
+                   model = gstat::vgm(psill = 0.025, range = 1, model = 'Gau'), nmax = 20)
+  field_1 <- predict(model_1, newdata = coords_df, nsim = 1)$sim1
+  field_2 <- predict(model_2, newdata = coords_df, nsim = 1)$sim1
+  field_3 <- predict(model_3, newdata = coords_df, nsim = 1)$sim1
+
   field <- tcrossprod(cbind(field_1, field_2, field_3), mix_mat)
 } else {
-  message('The package RandomFields is needed to run this example.')
+  message('The package gstat is needed to run this example.')
   field <- rnorm(nrow(coords) * 3)
   dim(field) <- c(nrow(coords), 3)
 }

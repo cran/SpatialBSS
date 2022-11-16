@@ -1,18 +1,27 @@
 #------------------------------------------------#
 #   data whitening
 #------------------------------------------------#
-white_data <- function(x, rob_whitening = FALSE, lcov = c('lcov', 'ldiff', 'lcov_norm'), kernel_mat = numeric(0)) {
+white_data <- function(x, whitening = c("standard", "rob", "hr"), 
+                       lcov = c('lcov', 'ldiff', 'lcov_norm'), 
+                       kernel_mat = numeric(0)) {
+  whitening <- match.arg(whitening)
   lcov <- match.arg(lcov)
   
-  mu <- colMeans(x)
-  x_0 <- sweep(x, MARGIN = 2, STATS = mu, FUN = '-')
-  
-  if (rob_whitening) {
-    s <- local_covariance_matrix(x, list(kernel_mat), lcov = lcov, center = TRUE)[[1]]
-  } else {
+  if (whitening == "rob") {
+    mu <- colMeans(x)
+    x_0 <- sweep(x, MARGIN = 2, STATS = mu, FUN = '-')
+    s <- local_covariance_matrix(x_0, list(kernel_mat), lcov = lcov, center = FALSE)[[1]]
+  } else if (whitening == "standard") {
+    mu <- colMeans(x)
+    x_0 <- sweep(x, MARGIN = 2, STATS = mu, FUN = '-')
     s <- crossprod(x_0) / (nrow(x) - 1)
+  } else if (whitening == "hr") {
+    HRest <- SpatialNP::signs.shape(x)
+    mu <- attr(HRest, "location")
+    s <- HRest[,]
+    x_0 <- sweep(x, MARGIN = 2, STATS = mu, FUN = '-')
   }
-
+  
   s_evd <- eigen(s, symmetric = TRUE)
   s_inv_sqrt <- s_evd$vectors %*% tcrossprod(diag(1 / sqrt(s_evd$values)), s_evd$vectors)
   s_sqrt <- s_evd$vectors %*% tcrossprod(diag(sqrt(s_evd$values)), s_evd$vectors)
@@ -49,29 +58,8 @@ spatial_kernel_matrix <- function(coords, kernel_type = c('ring', 'ball', 'gauss
 }
 
 #------------------------------------------------#
-#  local covariance matrix computation
+#   idw prediction
 #------------------------------------------------#
-local_covariance_matrix <- function(x, kernel_list, lcov = c('lcov', 'ldiff', 'lcov_norm'), 
-                                    center = TRUE) {
-  lcov <- match.arg(lcov)
-  
-  if (center) {
-    x <- white_data(x)$x_0
-  }
-  
-  cov_sp_list <- switch(lcov,
-    'lcov'      = lapply(kernel_list, function(k_mat) sp_lcov_sparse(x = x, k = k_mat)),
-    'ldiff'     = lapply(kernel_list, function(k_mat) sp_ldiff_sparse(x = x, k = k_mat)),
-    'lcov_norm' = lapply(kernel_list, function(k_mat) sp_lcov_sparse(x = x, k = k_mat) * sqrt(nrow(k_mat) / sum(k_mat ^ 2)))
-  )
-  
-  cov_sp_list <- lapply(cov_sp_list, function(x) (x + t(x)) / 2)
-  
-  attr(cov_sp_list, 'lcov') <- lcov
-  
-  return(cov_sp_list)
-}
-
 predict_idw <- function(vals, coords, p, n_grid) {
   coords_pred <- as.matrix(expand.grid(seq(from = floor(min(coords[, 1])), to = ceiling(max(coords[, 1])), length.out = n_grid), 
                                        seq(from = floor(min(coords[, 2])), to = ceiling(max(coords[, 2])), length.out = n_grid)))
@@ -97,20 +85,23 @@ diag_scatters <- function(cov_list, ordered, ...) {
     d <- jade$D
   }
   
-  p <- ncol(d)
+  p <- ncol(d)    
+  diags <- matrix(0, nrow = k, ncol = p)
+  for (idx in 1:k) {
+    diags[idx, ] <- diag(d[(1:p) + (idx - 1) * p, ])
+  }
+  pevals <- colSums(diags ^ 2)
   if (ordered) {
-    diags_mat <- matrix(0, nrow = k, ncol = p)
-    for (idx in 1:k) {
-      diags_mat[idx, ] <- diag(d[(1:p) + (idx - 1) * p, ])
-    }
-    diag_order <- order(colSums(diags_mat ^ 2), decreasing = decr)
+    diag_order <- order(pevals, decreasing = decr)
     u <- u[, diag_order]
     for (idx in 1:k) {
       d[(1:p) + (idx - 1) * p, ] <- d[(1:p) + (idx - 1) * p, ][diag_order, diag_order]
     }
+    pevals <- pevals[diag_order]
+    diags <- diags[, diag_order]
   } 
   
-  return(list(u = u, d = d))
+  return(list(u = u, d = d, pevals = pevals, diags = diags))
 }
 
 #------------------------------------------------#

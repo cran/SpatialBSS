@@ -62,12 +62,12 @@ Three versions of local covariance matrices are implemented, the argument \code{
 
 Where \eqn{d_{i,j} \ge 0} correspond to the pairwise distances between coordinates, \eqn{x(s_i)} are the \code{p} random field values at location \eqn{s_i}, \eqn{\bar{x}} is the sample mean vector, and the kernel function \eqn{f(d)} determines the locality. The choice \code{'lcov_norm'} is useful when testing for the actual signal dimension of the latent field, see \code{\link{sbss_asymp}} and \code{\link{sbss_boot}}. LDiff matrices are supposed to be more robust when the random field shows a smooth trend. The following kernel functions are implemented and chosen with the argument \code{kernel_type}:
 \itemize{
-  \item \code{'ring'}: parameters are inner radius \eqn{r_i} and outer radius \eqn{r_o}, with \eqn{r_i < r_o}, and \eqn{r_i, r_o \ge 0}: \deqn{f(d;r_i, r_o) = I(r_i < d \le r_o)}
+  \item \code{'ring'}: parameters are inner radius \eqn{r_{in}} and outer radius \eqn{r_{out}}, with \eqn{r_{in} < r_{out}}, and \eqn{r_{in}, r_{out} \ge 0}: \deqn{f(d;r_{in}, r_{out}) = I(r_{in} < d \le r_{out})}
   \item \code{'ball'}: parameter is the radius \eqn{r}, with \eqn{r \ge 0}: \deqn{f(d;r) = I(d \le r)}
   \item \code{'gauss'}: Gaussian function where 95\% of the mass is inside the parameter \eqn{r}, with \eqn{r \ge 0}: \deqn{f(d;r) = exp(-0.5 (\Phi^{-1}(0.95) d/r)^2)}
 }
 
-The argument \code{kernel_type} determines the used kernel function as presented above, the argument \code{kernel_parameters} gives the corresponding parameters for the kernel function. Specifically, if \code{kernel_type} equals \code{'ball'} or \code{'gauss'} then \code{kernel_parameters} is a numeric vector where each entry corresponds to one parameter. Hence, \code{length(kernel_parameters)} local covariance matrices are used. Whereas, if \code{kernel_type} equals \code{'ring'}, then \code{kernel_parameters} must be a numeric vector of even length where subsequently the inner and outer radii must be given (informally: \code{c(r_i1, r_o1, r_i2, r_o2, \dots)}). In that case \code{length(kernel_parameters) / 2} local covariance matrices are used.
+The argument \code{kernel_type} determines the used kernel function as presented above, the argument \code{kernel_parameters} gives the corresponding parameters for the kernel function. Specifically, if \code{kernel_type} equals \code{'ball'} or \code{'gauss'} then \code{kernel_parameters} is a numeric vector where each entry corresponds to one parameter. Hence, \code{length(kernel_parameters)} local covariance matrices are used. Whereas, if \code{kernel_type} equals \code{'ring'}, then \code{kernel_parameters} must be a numeric vector of even length where subsequently the inner and outer radii must be given (informally: \code{c(r_in1, r_out1, r_in2, r_out2, \dots)}). In that case \code{length(kernel_parameters) / 2} local covariance matrices are used.
 
 Internally, \code{sbss} calls \code{\link{spatial_kernel_matrix}} to compute a list of \code{c(n,n)} kernel matrices based on the parameters given, where each entry of those matrices corresponds to \eqn{f(d_{i,j})}. Alternatively, such a list of kernel matrices can be given directly to the function \code{sbss} via the \code{kernel_list} argument. This is useful when \code{sbss} is called numerous times with the same coordinates/kernel functions as the computation of the kernel matrices is then done only once prior the actual \code{sbss} calls. For details see also \code{\link{spatial_kernel_matrix}}.
 
@@ -97,12 +97,16 @@ If more than one local covariance matrix is used \code{sbss} jointly diagonalize
   \item{w_inv}{
   inverse of the estimated unmixing matrix.
 }
-
-  \item{d}{
+  \item{pevals}{
+  (pseudo-)eigenvalues for each latent field entry.
+}  
+\item{d}{
   matrix of stacked (jointly) diagonalized local covariance matrices with dimension \code{c(length(kernel_parameters)*p,p)} for \code{'ball'} and \code{'gauss'} kernel or \code{c(}
   \code{(length(kernel_parameters) / 2)*p,p)} for \code{'ring'} kernel.
 }
-
+  \item{diags}{
+  matrix of dimension \code{c(length(kernel_parameters),p)} where the rows contain the diagonal of the diagonalized local autocovariance matrices.
+}
   \item{x_mu}{
   columnmeans of \code{x}.
 }
@@ -120,7 +124,7 @@ Bachoc, F., Genton, M. G, Nordhausen, K., Ruiz-Gazen, A. and Virta, J. (2020), \
 
 Nordhausen, K., Oja, H., Filzmoser, P., Reimann, C. (2015), \emph{Blind Source Separation for Spatial Compositional Data}, Mathematical Geosciences 47, 753-770, \doi{10.1007/s11004-014-9559-5}.
 
-Muehlmann, C., Bachoc, F., Nordhausen, K. and Yi, M. (2021), \emph{Test of the Latent Dimension of a Spatial Blind Source Separation Model}, Submitted for publication. Preprint available at \url{https://arxiv.org/abs/2011.01711}.
+Muehlmann, C., Bachoc, F., Nordhausen, K. and Yi, M. (2022), \emph{Test of the Latent Dimension of a Spatial Blind Source Separation Model}, to appear in Statistica Sinica, \doi{10.5705/ss.202021.0326}.v
 }
 
 \seealso{
@@ -131,19 +135,25 @@ Muehlmann, C., Bachoc, F., Nordhausen, K. and Yi, M. (2021), \emph{Test of the L
 # simulate coordinates
 coords <- runif(1000 * 2) * 20
 dim(coords) <- c(1000, 2)
+coords_df <- as.data.frame(coords)
+names(coords_df) <- c("x", "y")
 
 # simulate random field
-if (!requireNamespace('RandomFields', quietly = TRUE)) {
-  message('Please install the package RandomFields to run the example code.')
+if (!requireNamespace('gstat', quietly = TRUE)) {
+  message('Please install the package gstat to run the example code.')
 } else {
-  RandomFields::RFoptions(spConform = FALSE)
-  field_1 <- RandomFields::RFsimulate(model = RandomFields::RMexp(), 
-                                      x = coords)
-  field_2 <- RandomFields::RFsimulate(model = RandomFields::RMspheric(), 
-                                      x = coords)
-  field_3 <- RandomFields::RFsimulate(model = RandomFields::RMwhittle(nu = 2),  
-                                      x = coords)
-  field <- cbind(field_1, field_2, field_3)
+  library(gstat)
+  model_1 <- gstat(formula = z ~ 1, locations = ~ x + y, dummy = TRUE, beta = 0, 
+                   model = vgm(psill = 0.025, range = 1, model = 'Exp'), nmax = 20)
+  model_2 <- gstat(formula = z ~ 1, locations = ~ x + y, dummy = TRUE, beta = 0, 
+                   model = vgm(psill = 0.025, range = 1, kappa = 2, model = 'Mat'), 
+                   nmax = 20)
+  model_3 <- gstat(formula = z ~ 1, locations = ~ x + y, dummy = TRUE, beta = 0, 
+                   model = vgm(psill = 0.025, range = 1, model = 'Gau'), nmax = 20)
+  field_1 <- predict(model_1, newdata = coords_df, nsim = 1)$sim1
+  field_2 <- predict(model_2, newdata = coords_df, nsim = 1)$sim1
+  field_3 <- predict(model_3, newdata = coords_df, nsim = 1)$sim1
+  field <- as.matrix(cbind(field_1, field_2, field_3))
 
   # apply sbss with three ring kernels
   kernel_parameters <- c(0, 1, 1, 2, 2, 3)

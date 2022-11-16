@@ -1,9 +1,15 @@
 importFrom(graphics, plot)
+importFrom("stats", "princomp", "rnorm")
 
-export(sbss, sbss_asymp, sbss_boot, snss_sd, snss_jd, snss_sjd, spatial_kernel_matrix, local_covariance_matrix, white_data)
+export(sbss, sbss_asymp, sbss_boot, snss_sd, snss_jd, snss_sjd, 
+       spatial_kernel_matrix, local_covariance_matrix, white_data, 
+       local_gss_covariance_matrix, gen_glob_outl, gen_loc_outl, robsbss)
 S3method(sbss, default)
 S3method(sbss, SpatialPointsDataFrame)
 S3method(sbss, sf)
+S3method(robsbss, default)
+S3method(robsbss, SpatialPointsDataFrame)
+S3method(robsbss, sf)
 S3method(sbss_asymp, default)
 S3method(sbss_asymp, SpatialPointsDataFrame)
 S3method(sbss_asymp, sf)

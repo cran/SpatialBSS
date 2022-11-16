@@ -32,7 +32,7 @@ snss_sd.sf <- function(x, ...) {
 
 snss_sd.list <- function(x, coords, ordered = TRUE, ...) {
   # white data
-  x_w <- white_data(do.call(rbind, x), rob_whitening = FALSE)
+  x_w <- white_data(do.call(rbind, x))
   
   # scatters
   cov_1_inv_sqrt <- white_data(x[[1]])$s_inv_sqrt

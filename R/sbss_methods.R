@@ -9,7 +9,7 @@ coef.sbss <- function(object, ...) {
 # print
 #-------------------------------------------#
 print.sbss <- function(x, ...) {
-  print.listof(x[!(names(x) %in% c('s', 'coords', 'w_inv', 'x_mu', 'cov_inv_sqrt'))], ...)
+  print.listof(x[!(names(x) %in% c('s', 'coords', 'w_inv', 'x_mu', 'cov_inv_sqrt', 'weights'))], ...)
 }
 
 #-------------------------------------------#

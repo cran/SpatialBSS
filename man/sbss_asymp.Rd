@@ -117,8 +117,7 @@ If more than one local covariance matrix is used \code{sbss_asymp} jointly diago
 }
 
 \references{
-Muehlmann, C., Bachoc, F., Nordhausen, K. and Yi, M. (2021), \emph{Test of the Latent Dimension of a Spatial Blind Source Separation Model}, Submitted for publication. Preprint available at \url{https://arxiv.org/abs/2011.01711}.
-
+Muehlmann, C., Bachoc, F., Nordhausen, K. and Yi, M. (2022), \emph{Test of the Latent Dimension of a Spatial Blind Source Separation Model}, to appear in Statistica Sinica, \doi{10.5705/ss.202021.0326}.
 }
 
 \seealso{
@@ -131,20 +130,24 @@ Muehlmann, C., Bachoc, F., Nordhausen, K. and Yi, M. (2021), \emph{Test of the L
 n <- 1000
 coords <- runif(n * 2) * 20
 dim(coords) <- c(n, 2)
-
+coords_df <- as.data.frame(coords)
+names(coords_df) <- c("x", "y")
 # simulate random field
-if (!requireNamespace('RandomFields', quietly = TRUE)) {
-  message('Please install the package RandomFields to run the example code.')
+if (!requireNamespace('gstat', quietly = TRUE)) {
+  message('Please install the package gstat to run the example code.')
 } else {
-  RandomFields::RFoptions(spConform = FALSE)
-  field_1 <- RandomFields::RFsimulate(model = RandomFields::RMexp(), 
-                                      x = coords)
-  field_2 <- RandomFields::RFsimulate(model = RandomFields::RMspheric(), 
-                                      x = coords)
+  library(gstat)
+  model_1 <- gstat(formula = z ~ 1, locations = ~ x + y, dummy = TRUE, beta = 0, 
+                   model = vgm(psill = 0.025, range = 1, model = 'Exp'), nmax = 20)
+  model_2 <- gstat(formula = z ~ 1, locations = ~ x + y, dummy = TRUE, beta = 0, 
+                   model = vgm(psill = 0.025, range = 1, kappa = 2, model = 'Mat'), 
+                   nmax = 20)
+  field_1 <- predict(model_1, newdata = coords_df, nsim = 1)$sim1
+  field_2 <- predict(model_2, newdata = coords_df, nsim = 1)$sim1
   field_3 <- rnorm(n)
   field_4 <- rnorm(n)
   
-  latent_field <- cbind(field_1, field_2, field_3, field_4)
+  latent_field <- cbind(as.matrix(cbind(field_1, field_2)), field_3, field_4)
   mixing_matrix <- matrix(rnorm(16), 4, 4)
   observed_field <- latent_field \%*\% t(mixing_matrix)
   

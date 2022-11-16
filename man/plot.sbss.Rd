@@ -37,19 +37,24 @@ This method calls the corresponding plot method of \code{class(x$s)}. Either \co
 # simulate coordinates
 coords <- runif(1000 * 2) * 20
 dim(coords) <- c(1000, 2)
-
+coords_df <- as.data.frame(coords)
+names(coords_df) <- c("x", "y")
 # simulate random field
-if (!requireNamespace('RandomFields', quietly = TRUE)) {
-  message('Please install the package RandomFields to run the example code.')
+if (!requireNamespace('gstat', quietly = TRUE)) {
+  message('Please install the package gstat to run the example code.')
 } else {
-  RandomFields::RFoptions(spConform = FALSE)
-  field_1 <- RandomFields::RFsimulate(model = RandomFields::RMexp(), 
-                                      x = coords)
-  field_2 <- RandomFields::RFsimulate(model = RandomFields::RMspheric(), 
-                                      x = coords)
-  field_3 <- RandomFields::RFsimulate(model = RandomFields::RMwhittle(nu = 2),  
-                                      x = coords)
-  field <- cbind(field_1, field_2, field_3)
+  library(gstat)
+  model_1 <- gstat(formula = z ~ 1, locations = ~ x + y, dummy = TRUE, beta = 0, 
+                   model = vgm(psill = 0.025, range = 1, model = 'Exp'), nmax = 20)
+  model_2 <- gstat(formula = z ~ 1, locations = ~ x + y, dummy = TRUE, beta = 0, 
+                   model = vgm(psill = 0.025, range = 1, kappa = 2, model = 'Mat'), 
+                   nmax = 20)
+  model_3 <- gstat(formula = z ~ 1, locations = ~ x + y, dummy = TRUE, beta = 0, 
+                   model = vgm(psill = 0.025, range = 1, model = 'Gau'), nmax = 20)
+  field_1 <- predict(model_1, newdata = coords_df, nsim = 1)$sim1
+  field_2 <- predict(model_2, newdata = coords_df, nsim = 1)$sim1
+  field_3 <- predict(model_3, newdata = coords_df, nsim = 1)$sim1
+  field <- as.matrix(cbind(field_1, field_2, field_3))
 
   # compute ring kernel matrices
   kernel_parameters <- c(0, 1, 1, 2, 2, 3)

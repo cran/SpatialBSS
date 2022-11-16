@@ -4,7 +4,8 @@
 sbss <- function(x, ...) UseMethod("sbss")
 
 sbss.default <- function(x, coords, kernel_type = c('ring', 'ball', 'gauss'), kernel_parameters, 
-                         lcov = c('lcov', 'ldiff', 'lcov_norm'), ordered = TRUE, kernel_list = NULL, rob_whitening = FALSE, ...) {
+                         lcov = c('lcov', 'ldiff', 'lcov_norm'), ordered = TRUE, 
+                         kernel_list = NULL, rob_whitening = FALSE, ...) {
   # kernel matrix
   kernel_type <- match.arg(kernel_type)
   lcov <- match.arg(lcov)
@@ -21,9 +22,12 @@ sbss.default <- function(x, coords, kernel_type = c('ring', 'ball', 'gauss'), ke
   k <- length(kernel_list)
   
   # standardize data
-  x_w <- white_data(x, rob_whitening = rob_whitening, lcov = lcov, kernel_mat = kernel_list[[1]])
   if (rob_whitening) {
+    x_w <- white_data(x, whitening = "rob", 
+                      lcov = lcov, kernel_mat = kernel_list[[1]])
     kernel_list[[1]] <- NULL
+  } else {
+    x_w <- white_data(x, whitening = "standard")
   }
   
   # spatial covariance matrices
@@ -39,7 +43,9 @@ sbss.default <- function(x, coords, kernel_type = c('ring', 'ball', 'gauss'), ke
   colnames(s) <- paste0('IC.', 1:ncol(s))
   
   # results
-  return(structure(list(s = s, coords = coords, w = w, w_inv = w_inv, d = cov_sp_d$d, x_mu = x_w$mu, cov_inv_sqrt = x_w$s_inv_sqrt), class = "sbss"))
+  return(structure(list(s = s, coords = coords, w = w, w_inv = w_inv, 
+                        pevals = cov_sp_d$pevals, d = cov_sp_d$d, diags = cov_sp_d$diags,
+                        x_mu = x_w$mu, cov_inv_sqrt = x_w$s_inv_sqrt), class = "sbss"))
 }
 
 sbss.SpatialPointsDataFrame <- function(x, ...) {

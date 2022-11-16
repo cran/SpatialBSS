@@ -80,7 +80,7 @@ Similarly as \code{\link{sbss}} the function \code{snss_sd} returns a list of cl
 }
 
 \references{
-Muehlmann, C., Bachoc, F. and Nordhausen, K. (2021), \emph{Blind Source Separation for Non-Stationary Random Fields}, Submitted for publication. Preprint available at \url{https://arxiv.org/abs/2107.01916}.
+Muehlmann, C., Bachoc, F. and Nordhausen, K. (2022), \emph{Blind Source Separation for Non-Stationary Random Fields}, Spatial Statistics, 47, 100574, \doi{10.1016/j.spasta.2021.100574}.
 }
 
 \seealso{
@@ -100,7 +100,7 @@ field_3 <- rnorm(n) * (coords[, 1] < 10) + rnorm(n, 0, 3) * (coords[, 1] >= 10)
 
 latent_field <- cbind(field_1, field_2, field_3)
 mixing_matrix <- matrix(rnorm(9), 3, 3)
-observed_field <- latent_field %*% t(mixing_matrix)
+observed_field <- latent_field \%*\% t(mixing_matrix)
 
 observed_field_sp <- sp::SpatialPointsDataFrame(coords = coords, 
                                               data = data.frame(observed_field))

@@ -103,7 +103,7 @@ Similarly as \code{\link{sbss}} the function \code{snss_jd} returns a list of cl
 }
 
 \references{
-Muehlmann, C., Bachoc, F. and Nordhausen, K. (2021), \emph{Blind Source Separation for Non-Stationary Random Fields}, Submitted for publication. Preprint available at \url{https://arxiv.org/abs/2107.01916}.
+Muehlmann, C., Bachoc, F. and Nordhausen, K. (2022), \emph{Blind Source Separation for Non-Stationary Random Fields}, Spatial Statistics, 47, 100574, \doi{10.1016/j.spasta.2021.100574}.
 }
 
 \seealso{
