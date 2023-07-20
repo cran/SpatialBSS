@@ -15,8 +15,8 @@ Muehlmann, Bachoc and Nordhausen (2022) <doi:10.1016/j.spasta.2021.100574> as we
 \tabular{ll}{
 Package: \tab SpatialBSS\cr
 Type: \tab Package\cr
-Version: \tab 0.13-0 \cr
-Date: \tab 2022-11-15\cr
+Version: \tab 0.14-0 \cr
+Date: \tab 2023-07-20\cr
 License: \tab GPL (>= 2)\cr
 }
 
@@ -38,7 +38,7 @@ The random field can be either a pair of numeric matrices giving the coordinates
 Christoph Muehlmann, Mika Sipila, Klaus Nordhausen, Sara Taskinen, Joni Virta
 
 Maintainer: 
-Christoph Muehlmann \email{christoph.muehlmann@tuwien.ac.at}
+Klaus Nordhausen \email{klausnordhausenR@gmail.com}
 }
 
 \references{

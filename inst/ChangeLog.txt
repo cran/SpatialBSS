@@ -1,3 +1,8 @@
+Version 0.14-0:
+
+* Changing the maintainer
+* emoving the requirement of C++11
+
 Version 0.13-0:
 
 * Updating help files
