@@ -35,23 +35,51 @@ white_data <- function(x, whitening = c("standard", "rob", "hr"),
 #------------------------------------------------#
 #   spatial kernel function computation
 #------------------------------------------------#
-spatial_kernel_matrix <- function(coords, kernel_type = c('ring', 'ball', 'gauss'), kernel_parameters) {
+spatial_kernel_matrix <- function(coords, kernel_type = c('ring', 'ball', 'gauss'), 
+                                  kernel_parameters, angles = NULL) {
   kernel_type <- match.arg(kernel_type)
+  kernel_list <- list()
   
-  if (kernel_type == 'ball') {
-    kernel_list <- lapply(kernel_parameters, 
-                          function(h) if (h >= 0) k_mat_ball(coords = coords, h = h)
-                                      else stop('Radius must be zero or positive.'))    
-  } else if (kernel_type == 'ring' && (length(kernel_parameters) %% 2 == 0)) {
-    kernel_list <- lapply(seq(from = 1, to = length(kernel_parameters), by = 2), 
-                          function(idx) if (kernel_parameters[idx] >= kernel_parameters[idx + 1]) stop('Inner radius must be smaller than outer radius.') 
-                                        else k_mat_ring(coords = coords, h1 = kernel_parameters[idx], h2 = kernel_parameters[idx + 1]))  
-  } else if (kernel_type == 'gauss') {
-    kernel_list <- lapply(kernel_parameters, 
-                          function(h) if (h >= 0) k_mat_exp(coords = coords, h = h)
-                                      else stop('Parameter must be zero or positive.'))
+  if (is.null(angles)) {
+    # Original behavior without angles
+    if (kernel_type == 'ball') {
+      kernel_list <- lapply(kernel_parameters, 
+                            function(h) if (h >= 0) k_mat_ball(coords = coords, h = h)
+                            else stop('Radius must be zero or positive.'))    
+    } else if (kernel_type == 'ring' && (length(kernel_parameters) %% 2 == 0)) {
+      kernel_list <- lapply(seq(from = 1, to = length(kernel_parameters), by = 2), 
+                            function(idx) if (kernel_parameters[idx] >= kernel_parameters[idx + 1]) 
+                              stop('Inner radius must be smaller than outer radius.') 
+                            else k_mat_ring(coords = coords, h1 = kernel_parameters[idx], h2 = kernel_parameters[idx + 1]))  
+    } else if (kernel_type == 'gauss') {
+      kernel_list <- lapply(kernel_parameters, 
+                            function(h) if (h >= 0) k_mat_exp(coords = coords, h = h)
+                            else stop('Parameter must be zero or positive.'))
+    } else {
+      stop('Invalid input. Note that the length(kernel_parameters) must be an even number for the ring kernel.')
+    }
   } else {
-    stop('Invalid input. Note that the length(kernel_parameters) must be an even number for the ring kernel.')
+    # New behavior with angles
+    for (angle in angles) {  # Iterate over angle pairs
+      if (kernel_type == 'ball') {
+        k <- lapply(kernel_parameters, 
+                    function(h) if (h >= 0) k_mat_ball_angle(coords = coords, h = h, am = angle[1], tol = angle[2])
+                    else stop('Radius must be zero or positive.'))    
+      } else if (kernel_type == 'ring' && (length(kernel_parameters) %% 2 == 0)) {
+        k <- lapply(seq(from = 1, to = length(kernel_parameters), by = 2), 
+                    function(idx) if (kernel_parameters[idx] >= kernel_parameters[idx + 1]) 
+                      stop('Inner radius must be smaller than outer radius.') 
+                    else k_mat_ring_angle(coords = coords, h1 = kernel_parameters[idx], h2 = kernel_parameters[idx + 1], 
+                                          am = angle[1], tol = angle[2]))  
+      } else if (kernel_type == 'gauss') {
+        k <- lapply(kernel_parameters, 
+                    function(h) if (h >= 0) k_mat_exp_angle(coords = coords, h = h, am = angle[1], tol = angle[2])
+                    else stop('Parameter must be zero or positive.'))
+      } else {
+        stop('Invalid input. Note that the length(kernel_parameters) must be an even number for the ring kernel.')
+      }
+      kernel_list <- c(k, kernel_list)  
+    }
   }
   
   return(kernel_list)

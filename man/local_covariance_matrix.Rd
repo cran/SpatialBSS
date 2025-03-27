@@ -44,7 +44,7 @@ Where \eqn{d_{i,j} \ge 0} correspond to the pairwise distances between coordinat
 }
 
 \references{
-Muehlmann, C., Filzmoser, P. and Nordhausen, K. (2021), \emph{Spatial Blind Source Separation in the Presence of a Drift}, Submitted for publication. Preprint available at \url{https://arxiv.org/abs/2108.13813}.
+Muehlmann, C., Filzmoser, P. and Nordhausen, K. (2024), \emph{Spatial Blind Source Separation in the Presence of a Drift}, Austrian Journal of Statistics, 53, 48-68, \doi{10.17713/ajs.v53i2.1668}.
 
 Bachoc, F., Genton, M. G, Nordhausen, K., Ruiz-Gazen, A. and Virta, J. (2020), \emph{Spatial Blind Source Separation}, Biometrika, 107, 627-646, \doi{10.1093/biomet/asz079}.
 

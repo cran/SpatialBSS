@@ -11,7 +11,7 @@ Computation of Spatial Kernel Matrices
 
 \usage{
 spatial_kernel_matrix(coords, kernel_type = c('ring', 'ball', 'gauss'), 
-                      kernel_parameters)
+                      kernel_parameters, angles = NULL)
 }
 
 \arguments{
@@ -23,6 +23,9 @@ a character string indicating which kernel function to use. Either \code{'ring'}
 }
   \item{kernel_parameters}{
 a numeric vector that gives the parameters for the kernel function. At least length of one for \code{'ball'} and \code{'gauss'} or two for \code{'ring'} kernel, see details.
+}
+\item{angles}{Optional argument specifying the anisotropic constraint. If \code{NULL} (default), the function computes isotropic kernels. Otherwise, \code{angles} must be a list of numeric vectors, where each vector has length 2: \eqn{(\alpha_1, \alpha_2)}. 
+The parameter \eqn{\alpha_1} must be in the range \eqn{0 \leq \alpha_1 \leq 2\pi}, and \eqn{\alpha_2} must satisfy \eqn{0 \leq \alpha_2 \leq \pi/2}, see details.
 }
 }
 
@@ -43,6 +46,16 @@ Where \eqn{d_{i,j} \ge 0} correspond to the pairwise distances between coordinat
 
 The argument \code{kernel_type} determines the used kernel function as presented above, the argument \code{kernel_parameters} gives the corresponding parameters for the kernel function. Specifically, if \code{kernel_type} equals \code{'ball'} or \code{'gauss'} then \code{kernel_parameters} is a numeric vector where each entry corresponds to one parameter. Hence, \code{length(kernel_parameters)} spatial kernel matrices of type \code{kernel_type} are computed. Whereas, if \code{kernel_type} equals \code{'ring'}, then \code{kernel_parameters} must be a numeric vector of even length where subsequently the inner and outer radii must be given (informally: \code{c(r_i1, r_o1, r_i2, r_o2, \dots)}). In that case \code{length(kernel_parameters) / 2} spatial kernel matrices of type \code{'ring'} are computed.
 
+
+If the optional argument \code{angles} is provided, the computed spatial kernel matrices incorporate anisotropic constraints. The \code{angles} argument must be a list of numeric vectors, where each vector consists of two values: \eqn{\alpha_1} (the main direction) and \eqn{\alpha_2} (the angular tolerance). The directional constraint ensures that only spatial relationships within the specified angle range are considered:
+\itemize{
+  \item \eqn{0 \leq \alpha_1 \leq 2\pi} defines the main direction in radians.
+  \item \eqn{0 \leq \alpha_2 \leq \pi/2} specifies the angular tolerance.
+}
+When \code{angles} is not \code{NULL}, the function applies the kernel function only to points satisfying \eqn{d_{ij} \angle e_{\alpha_1} \in [0, \alpha_2]}. If \code{angles} is \code{NULL}, the kernels are computed isotropically.
+
+
+
 The output of this function can be used with the function \code{\link{sbss}} to avoid unnecessary computation of kernel matrices when \code{\link{sbss}} is called multiple times with the same coordinate/kernel function setting. Additionally, the output can be used with the function \code{\link{local_covariance_matrix}} to actually compute local covariance matrices as defined above based on a given set of spatial kernel matrices.
 }
 
@@ -51,7 +64,9 @@ The output of this function can be used with the function \code{\link{sbss}} to 
 }
 
 \references{
-Muehlmann, C., Filzmoser, P. and Nordhausen, K. (2021), \emph{Spatial Blind Source Separation in the Presence of a Drift}, Submitted for publication. Preprint available at \url{https://arxiv.org/abs/2108.13813}.
+Muehlmann, C., Cappello, C., De Iaco, S. and Nordhausen, K. (2025), \emph{Anisotropic Local Covariance Matrices for Spatial Blind Source Separation}. Manuscript.
+
+Muehlmann, C., Filzmoser, P. and Nordhausen, K. (2024), \emph{Spatial Blind Source Separation in the Presence of a Drift}, Austrian Journal of Statistics, 53, 48-68, \doi{10.17713/ajs.v53i2.1668}.
 
 Bachoc, F., Genton, M. G, Nordhausen, K., Ruiz-Gazen, A. and Virta, J. (2020), \emph{Spatial Blind Source Separation}, Biometrika, 107, 627-646, \doi{10.1093/biomet/asz079}.
 }
@@ -80,6 +95,12 @@ kernel_params_gauss <- c(0.5, 1, 2)
 gauss_kernel_list <- 
   spatial_kernel_matrix(coords, 'gauss', kernel_params_gauss)
 
+# anisotropic examlple
+# computing two ring kernel matrices each with two angles
+kernel_params_ring <- c(0, 0.5, 0.5, 2)
+angles_params <- list(c(pi / 4, pi / 4), c(3 * pi / 4, pi / 4))
+ring_aniso_kernel_list <- 
+  spatial_kernel_matrix(coords, 'ring', kernel_params_ring, angles_params)
 }
 
 \keyword{ array }

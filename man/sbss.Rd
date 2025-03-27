@@ -16,7 +16,8 @@ Spatial Blind Source Separation
 sbss(x, ...)
 
 \method{sbss}{default}(x, coords, kernel_type = c('ring', 'ball', 'gauss'), 
-     kernel_parameters, lcov = c('lcov', 'ldiff', 'lcov_norm'), ordered = TRUE, 
+     kernel_parameters, lcov = c('lcov', 'ldiff', 'lcov_norm'), 
+     angles = NULL, ordered = TRUE, 
      kernel_list = NULL, rob_whitening = FALSE, \dots)
 \method{sbss}{SpatialPointsDataFrame}(x, \dots)
 \method{sbss}{sf}(x, \dots)
@@ -38,7 +39,10 @@ a numeric vector that gives the parameters for the kernel function. At least len
   \item{lcov}{
 a string indicating which type of local covariance matrix to use. Either \code{'lcov'} (default), \code{'ldiff'} or \code{'lcov_norm'}. See \code{\link{sbss_asymp}} for details on the latter option.
 }
-  \item{ordered}{
+\item{angles}{Optional argument specifying the anisotropic constraint. If \code{NULL} (default), the function computes isotropic kernels. Otherwise, \code{angles} must be a list of numeric vectors, where each vector has length 2: \eqn{(\alpha_1, \alpha_2)}. 
+The parameter \eqn{\alpha_1} must be in the range \eqn{0 \leq \alpha_1 \leq 2\pi}, and \eqn{\alpha_2} must satisfy \eqn{0 \leq \alpha_2 \leq \pi/2}. For details see \code{\link{spatial_kernel_matrix}}.
+}
+\item{ordered}{
 logical. If \code{TRUE} the entries of the latent field are ordered by the sum of squared (pseudo-)eigenvalues of the diagonalized local covariance matrix/matrices. Default is \code{TRUE}.
 }
   \item{kernel_list}{
@@ -68,6 +72,7 @@ Where \eqn{d_{i,j} \ge 0} correspond to the pairwise distances between coordinat
 }
 
 The argument \code{kernel_type} determines the used kernel function as presented above, the argument \code{kernel_parameters} gives the corresponding parameters for the kernel function. Specifically, if \code{kernel_type} equals \code{'ball'} or \code{'gauss'} then \code{kernel_parameters} is a numeric vector where each entry corresponds to one parameter. Hence, \code{length(kernel_parameters)} local covariance matrices are used. Whereas, if \code{kernel_type} equals \code{'ring'}, then \code{kernel_parameters} must be a numeric vector of even length where subsequently the inner and outer radii must be given (informally: \code{c(r_in1, r_out1, r_in2, r_out2, \dots)}). In that case \code{length(kernel_parameters) / 2} local covariance matrices are used.
+By default the spatial kernels are of isotropic nature - anisotropic variants can be obtained using the \code{angles} argument as detailed in \code{\link{spatial_kernel_matrix}}. 
 
 Internally, \code{sbss} calls \code{\link{spatial_kernel_matrix}} to compute a list of \code{c(n,n)} kernel matrices based on the parameters given, where each entry of those matrices corresponds to \eqn{f(d_{i,j})}. Alternatively, such a list of kernel matrices can be given directly to the function \code{sbss} via the \code{kernel_list} argument. This is useful when \code{sbss} is called numerous times with the same coordinates/kernel functions as the computation of the kernel matrices is then done only once prior the actual \code{sbss} calls. For details see also \code{\link{spatial_kernel_matrix}}.
 
@@ -118,13 +123,13 @@ If more than one local covariance matrix is used \code{sbss} jointly diagonalize
 }
 
 \references{
-Muehlmann, C., Filzmoser, P. and Nordhausen, K. (2021), \emph{Spatial Blind Source Separation in the Presence of a Drift}, Submitted for publication. Preprint available at \url{https://arxiv.org/abs/2108.13813}.
+Muehlmann, C., Filzmoser, P. and Nordhausen, K. (2024), \emph{Spatial Blind Source Separation in the Presence of a Drift}, Austrian Journal of Statistics, 53, 48-68, \doi{10.17713/ajs.v53i2.1668}.
 
 Bachoc, F., Genton, M. G, Nordhausen, K., Ruiz-Gazen, A. and Virta, J. (2020), \emph{Spatial Blind Source Separation}, Biometrika, 107, 627-646, \doi{10.1093/biomet/asz079}.
 
 Nordhausen, K., Oja, H., Filzmoser, P., Reimann, C. (2015), \emph{Blind Source Separation for Spatial Compositional Data}, Mathematical Geosciences 47, 753-770, \doi{10.1007/s11004-014-9559-5}.
 
-Muehlmann, C., Bachoc, F., Nordhausen, K. and Yi, M. (2022), \emph{Test of the Latent Dimension of a Spatial Blind Source Separation Model}, to appear in Statistica Sinica, \doi{10.5705/ss.202021.0326}.v
+Muehlmann, C., Bachoc, F., Nordhausen, K. and Yi, M. (2024), \emph{Test of the Latent Dimension of a Spatial Blind Source Separation Model}, Statistica Sinica, 34, 837-865, \doi{10.5705/ss.202021.0326}.
 }
 
 \seealso{
@@ -132,6 +137,7 @@ Muehlmann, C., Bachoc, F., Nordhausen, K. and Yi, M. (2022), \emph{Test of the L
 }
 
 \examples{
+# example on simulated data
 # simulate coordinates
 coords <- runif(1000 * 2) * 20
 dim(coords) <- c(1000, 2)
@@ -180,6 +186,18 @@ if (!requireNamespace('gstat', quietly = TRUE)) {
   sbss_result_ldiff <- 
     sbss(field, coords, kernel_type = 'ring', 
          kernel_parameters = kernel_parameters, lcov = 'ldiff')
+
+#example on real data      
+data(veneto_weather)
+
+kernel_type <- 'ring'
+kernel_parameters <-c(0, 40000, 40000, 65000, 65000, 80000)
+                                          
+angles_1 <- list(c(0, pi / 8), c(pi / 4, pi / 8), c(pi / 2, pi / 8), c(3 * pi / 4, pi / 8))
+
+sbss_anis <- sbss(x = veneto_weather, kernel_type = kernel_type, 
+                  kernel_parameters = kernel_parameters, 
+                  angles = angles_1)
 }
 
 }

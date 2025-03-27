@@ -57,7 +57,7 @@ Hettmansperger, T. P., & Randles, R. H. (2002). \emph{A practical affine equivar
 
 Raymaekers, J., & Rousseeuw, P. (2019). \emph{A generalized spatial sign covariance matrix. Journal of Multivariate Analysis}, 171 , 94-111. \doi{10.1016/j.jmva.2018.11.010}.
 
-Sipila, M., Muehlmann, C. Nordhausen, K. & Taskinen, S. (2022). \emph{Robust second order stationary spatial blind source separation using generalized sign matrices}. Manuscript.
+Sipila, M., Muehlmann, C. Nordhausen, K. & Taskinen, S. (2024). \emph{Robust second order stationary spatial blind source separation using generalized sign matrices}, Spatial Statistics, 59, 100803, \doi{10.1016/j.spasta.2023.100803}.
 }
 
 \seealso{

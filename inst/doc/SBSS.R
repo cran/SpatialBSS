@@ -85,3 +85,18 @@ local_cov <- local_covariance_matrix(field, kernel_list = ring_kernel_matrices,
 local_diff <- local_covariance_matrix(field, kernel_list =  ring_kernel_matrices, 
                                       lcov = 'ldiff', center = TRUE)
 
+## ----anis---------------------------------------------------------------------
+library('SpatialBSS')
+
+data(veneto_weather)
+
+kernel_type <- 'ring'
+kernel_parameters <-c(0, 40000, 40000, 65000, 65000, 80000)
+                                          
+angles_1 <- list(c(0, pi / 8), c(pi / 4, pi / 8), c(pi / 2, pi / 8), c(3 * pi / 4, pi / 8))
+
+sbss_anis <- sbss(x = veneto_weather, kernel_type = kernel_type, 
+                  kernel_parameters = kernel_parameters, 
+                  angles = angles_1)
+
+

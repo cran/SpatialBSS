@@ -117,7 +117,7 @@ If more than one local covariance matrix is used \code{sbss_asymp} jointly diago
 }
 
 \references{
-Muehlmann, C., Bachoc, F., Nordhausen, K. and Yi, M. (2022), \emph{Test of the Latent Dimension of a Spatial Blind Source Separation Model}, to appear in Statistica Sinica, \doi{10.5705/ss.202021.0326}.
+Muehlmann, C., Bachoc, F., Nordhausen, K. and Yi, M. (2024), \emph{Test of the Latent Dimension of a Spatial Blind Source Separation Model}, Statistica Sinica, 34, 837-865, \doi{10.5705/ss.202021.0326}.
 }
 
 \seealso{

@@ -62,6 +62,49 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// k_mat_ball_angle
+arma::mat k_mat_ball_angle(const arma::mat& coords, const double& h, const double& am, const double& tol);
+RcppExport SEXP _SpatialBSS_k_mat_ball_angle(SEXP coordsSEXP, SEXP hSEXP, SEXP amSEXP, SEXP tolSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type coords(coordsSEXP);
+    Rcpp::traits::input_parameter< const double& >::type h(hSEXP);
+    Rcpp::traits::input_parameter< const double& >::type am(amSEXP);
+    Rcpp::traits::input_parameter< const double& >::type tol(tolSEXP);
+    rcpp_result_gen = Rcpp::wrap(k_mat_ball_angle(coords, h, am, tol));
+    return rcpp_result_gen;
+END_RCPP
+}
+// k_mat_ring_angle
+arma::mat k_mat_ring_angle(const arma::mat& coords, const double& h1, const double& h2, const double& am, const double& tol);
+RcppExport SEXP _SpatialBSS_k_mat_ring_angle(SEXP coordsSEXP, SEXP h1SEXP, SEXP h2SEXP, SEXP amSEXP, SEXP tolSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type coords(coordsSEXP);
+    Rcpp::traits::input_parameter< const double& >::type h1(h1SEXP);
+    Rcpp::traits::input_parameter< const double& >::type h2(h2SEXP);
+    Rcpp::traits::input_parameter< const double& >::type am(amSEXP);
+    Rcpp::traits::input_parameter< const double& >::type tol(tolSEXP);
+    rcpp_result_gen = Rcpp::wrap(k_mat_ring_angle(coords, h1, h2, am, tol));
+    return rcpp_result_gen;
+END_RCPP
+}
+// k_mat_exp_angle
+arma::mat k_mat_exp_angle(const arma::mat& coords, const double& h, const double& am, const double& tol);
+RcppExport SEXP _SpatialBSS_k_mat_exp_angle(SEXP coordsSEXP, SEXP hSEXP, SEXP amSEXP, SEXP tolSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type coords(coordsSEXP);
+    Rcpp::traits::input_parameter< const double& >::type h(hSEXP);
+    Rcpp::traits::input_parameter< const double& >::type am(amSEXP);
+    Rcpp::traits::input_parameter< const double& >::type tol(tolSEXP);
+    rcpp_result_gen = Rcpp::wrap(k_mat_exp_angle(coords, h, am, tol));
+    return rcpp_result_gen;
+END_RCPP
+}
 // idx_per_block
 Rcpp::List idx_per_block(const arma::mat& coords, const arma::mat& coords_block, const int d);
 RcppExport SEXP _SpatialBSS_idx_per_block(SEXP coordsSEXP, SEXP coords_blockSEXP, SEXP dSEXP) {
@@ -105,6 +148,9 @@ static const R_CallMethodDef CallEntries[] = {
     {"_SpatialBSS_k_mat_ball", (DL_FUNC) &_SpatialBSS_k_mat_ball, 2},
     {"_SpatialBSS_k_mat_ring", (DL_FUNC) &_SpatialBSS_k_mat_ring, 3},
     {"_SpatialBSS_k_mat_exp", (DL_FUNC) &_SpatialBSS_k_mat_exp, 2},
+    {"_SpatialBSS_k_mat_ball_angle", (DL_FUNC) &_SpatialBSS_k_mat_ball_angle, 4},
+    {"_SpatialBSS_k_mat_ring_angle", (DL_FUNC) &_SpatialBSS_k_mat_ring_angle, 5},
+    {"_SpatialBSS_k_mat_exp_angle", (DL_FUNC) &_SpatialBSS_k_mat_exp_angle, 4},
     {"_SpatialBSS_idx_per_block", (DL_FUNC) &_SpatialBSS_idx_per_block, 3},
     {"_SpatialBSS_sp_lcov_sparse", (DL_FUNC) &_SpatialBSS_sp_lcov_sparse, 2},
     {"_SpatialBSS_sp_ldiff_sparse", (DL_FUNC) &_SpatialBSS_sp_ldiff_sparse, 2},

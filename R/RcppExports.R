@@ -17,6 +17,18 @@ k_mat_exp <- function(coords, h) {
     .Call(`_SpatialBSS_k_mat_exp`, coords, h)
 }
 
+k_mat_ball_angle <- function(coords, h, am, tol) {
+    .Call(`_SpatialBSS_k_mat_ball_angle`, coords, h, am, tol)
+}
+
+k_mat_ring_angle <- function(coords, h1, h2, am, tol) {
+    .Call(`_SpatialBSS_k_mat_ring_angle`, coords, h1, h2, am, tol)
+}
+
+k_mat_exp_angle <- function(coords, h, am, tol) {
+    .Call(`_SpatialBSS_k_mat_exp_angle`, coords, h, am, tol)
+}
+
 idx_per_block <- function(coords, coords_block, d) {
     .Call(`_SpatialBSS_idx_per_block`, coords, coords_block, d)
 }

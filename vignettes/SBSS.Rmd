@@ -38,6 +38,11 @@ $$
 $$
 where $\Omega$ is the so called mixing matrix and $\mu$ is some constant shift. The latent field $Z(s)$ shows a clearer structure than the original field $X(s)$. In particular, $Z(s)$ is assumed to have zero mean and unit covariance and the components of $Z(s)$ show no spatial cross-dependence. Meaning that $\text{E}\{ Z(s) \} = 0$, $\text{Cov} \{ Z(s) \} = \text{E} \{ Z(s) Z(s)^\top \} = I_p$ for all $s \in \mathcal{S}$ and $\text{Cov} \{ Z(s_1), Z(s_2) \} = \text{E} \{ Z(s_1) Z(s_2)^\top \} = D(\lVert s_1 - s_2 \rVert)$ for all $s_1, s_2 \in \mathcal{S}$ where $D$ is some diagonal matrix. Hence, $Z(s)$ is also a weakly-stationary random field.
 
+The SBSS approach uses the spatially weighted local scatter matrices to identify 
+a transformation that separates the original multivariate process into uncorrelated or independent latent fields. 
+These fields are then assumed to exhibit different spatial dependence structures, which can be analyzed
+independently. SBSS can be applied under the assumption of isotropy or anisotropy, hence the latent fields can be estimated assuming isotropic or anisotropic covariance functions.
+
 Recovering the source random field $Z(s)$ is particularly beneficial in spatial prediction tasks such as various kriging methods. As the latent field shows no cross-dependence, univariate kriging can be applied on each component of $Z(s)$ individually. This approach avoids the complex modeling of cross-covariances and the use of CoKriging. 
 
 Moreover, an estimate of the unmixing matrix $W = \Omega ^ {-1}$ can be used for interpretation similar to PCA. The loadings are given by $W$ but in contrast to PCA the present method explicitly uses the spatial dependence of the data.
@@ -57,31 +62,54 @@ $$
 LDiff(f) = \frac{1}{n} \sum_{i=1}^n \sum_{j=1}^n f(s_i - s_j) (X(s_i) - X(s_j)) (X(s_i) - X(s_j))^\top.
 $$
 
-Here, the sums range over all points in the domain and the locality is defined by the kernel function $f$. For each location $s_i$ in the considered domain spatial dependence to each point $s_j$ is computed by the inner sum. The kernel function $f(s_i - s_j)$ determines which points $s_j$ are considered based on the distance between them. Whereas, the outer sum averages the inner sums of all points $s_i$ which leads to an average local spatial dependence measure for the random field $X(s)$. The difference between $LCov(f)$ and $LDiff(f)$ matrices lies in the fact that $LDiff(f)$ matrices are more robust when the random field shows a smooth trend compared to $LCov(f)$ matrices, as the former is computed by the difference of observations and the latter by differences to the sample mean vector $\bar{X}$. Note that if $f(x) = f_0(x) = I( x = 0)$ where $I(x)$ is the indicator function, then $LCov(f_0)$ reduces to an ordinary covariance estimator. Three options for the kernel function are suggested:
+Here, the sums range over all points in the domain and the locality is defined by the kernel function $f$. For each location $s_i$ in the considered domain spatial dependence to each point $s_j$ is computed by the inner sum. The kernel function $f(s_i - s_j)$ determines which points $s_j$ are considered based on the distance between them. Whereas, the outer sum averages the inner sums of all points $s_i$ which leads to an average local spatial dependence measure for the random field $X(s)$. The difference between $LCov(f)$ and $LDiff(f)$ matrices lies in the fact that $LDiff(f)$ matrices are more robust when the random field shows a smooth trend compared to $LCov(f)$ matrices, as the former is computed by the difference of observations and the latter by differences to the sample mean vector $\bar{X}$. Note that if $f(x) = f_0(x) = I(x = 0)$ where $I(x)$ is the indicator function, then $LCov(f_0)$ reduces to an ordinary covariance estimator. 
+Three options for the kernel function are suggested:
 
-* Ball: $f(d;r) = I(d \le h)$
+* Ball: $f(d;r) = I(\lVert d \rVert  \le r)$, where $I(\cdot)$ denotes the indicator function and $r \ge 0$,
 
-* Ring: $f(d;r_{in}, r_{out}) = I(r_{in} < d \le r_{out})$
+* Ring: $f(d;r_{in}, r_{out}) = I(r_{in} < \lVert d \rVert \le r_{out})$, where $I(\cdot)$ denotes the indicator function and $r_{out} > r_{in} \ge 0$,
 
-* Gauss: $f(d;r) = \exp(-0.5 (\Phi^{-1}(0.95) d/r)^2)$
+* Gauss: $f(d;r) = \exp(-0.5 (\Phi^{-1}(0.95) \lVert d \rVert/r)^2)$, where $\Phi^{-1}(0.95)$ is the 95\% quantile of the standard normal distribution and $r \ge 0$.
 
-where $d=\lVert s_1 - s_2 \rVert$, $\Phi^{-1}(0.95)$ is the 95\% quantile of the standard normal distribution and $r$ are the parameters for the kernel functions. The ball kernel function considers all coordinates inside a radius $r$ around points $s_i$, the Gauss kernel can be considered as a smooth version of the ball kernel. And as the name implies, ring kernels consider points $s_j$ that are between $r_{in}$ and $r_{out}$ separated from $s_i$.
+
+The ball kernel function considers all coordinates inside a radius $r$ around points $s_i$, the Gauss kernel can be considered as a smooth version of the ball kernel. And as the name implies, ring kernels consider points $s_j$ that are between $r_{in}$ and $r_{out}$ separated from $s_i$.
+
+It is worth pointing out that the above mentioned local covariance matrices implicitly assume isotropy, hence a proper generalization has been proposed to identify latent fields that exhibit anisotropic spatial dependencies: 
+$$
+LCov(\alpha, f) = \frac{1}{n} \sum_{i=1}^n \sum_{j=1}^n f(\mathbf{h}_{ij})I(\mathbf{h}_{ij} \angle
+ \mathbf{e}_{\alpha_1} \in [0, \alpha_2 ])  (X(s_i)-\bar{X}) (X(s_j)-\bar{X})^\top , 
+$$
+where $\mathbf{h}_{ij} = \mathbf{s}_i - \mathbf{s}_j$, $I(\cdot)$ is the indicator function $\boldsymbol{\alpha} =(\alpha_1, \alpha_2)^\top$ and  $\angle$ denotes the angle between two vectors, $\mathbf{e}_{\alpha_1} = (\cos{\alpha_1}, \sin{\alpha_1})^\top$ with $\alpha_1 \in [0, 2 \pi]$, $\alpha_2 \in [0, \pi / 2]$ and $f$ is a spatial kernel function, as previously detailed. Note that the indicator function $I(\cdot)$ excludes coordinate pairs where the angle of the separation vector $\mathbf{h}_{ij}$ relative to the x-axis does not lie between $\alpha_1$ and $\alpha_2$,
+
+
+
+
+
 
 ## How the estimate the unmixing matrix?
 
-One key result that is used in almost every BSS method states that when the data is standardized by $X^{st}(s) = \Sigma^{-1/2} ( X(s) - \text{E}(X(s)))$ then $X^{st}(s) = U Z(s)$, where $U$ is an orthogonal matrix and $\Sigma^{-1/2}$ is the inverse square root of the covariance matrix. This result can be used to reduce the task of finding a general unmixing matrix to a two step approach of first standardizing the data and then only finding an orthogonal matrix $U$. In the following, $M(f)$ denote either $LCov(f)$ or $LDiff(f)$ matrices. These considerations lead to the following algorithm for SBSS:
+One key result that is used in almost every BSS method states that when the data is standardized by $X^{st}(s) = \Sigma^{-1/2} ( X(s) - \text{E}(X(s)))$ then $X^{st}(s) = U Z(s)$, where $U$ is an orthogonal matrix and $\Sigma^{-1/2}$ is the inverse square root of the covariance matrix. This result can be used to reduce the task of finding a general unmixing matrix to a two step approach of first standardizing the data and then only finding an orthogonal matrix $U$. In the following, $M(f)$ denote either $LCov(f)$ or $LDiff(f)$, and $M(\boldsymbol{\alpha}, f)$ refers to $LCov(\alpha, f)$ matrices. These considerations lead to the following algorithm for SBSS:
 
 1. Standardizing the random field $X(s)$ by $X^{st}(s) = LCov(f_0)^{-1/2} ( X(s) - \overline{X})$, where $\overline{X} = \frac{1}{n} \sum_{i = 1}^n X(s_i)$.
 
 2. For a certain choice of kernel functions $f_1,\dots,f_k$ the corresponding local scatter matrices $M(f_1),\dots,M(f_k)$ are computed with the whitened data $X^{st}(s)$ from the first step. Then an orthogonal matrix $U$ is computed by:
 
-    * For the case of $k=1$: The eigen-decomposition of $M(f_1) = U \Lambda U^\top$ is computed to find $U$.
+    * the eigen-decomposition of $M(f_1) = U \Lambda U^\top$, for the case of $k=1$.
 
-    * For the case of $k > 1$: The local scatter matrices $M(f_1),\dots,M(f_k)$ are approximately jointly diagonalized by maximizing their diagonal elements. Formally, this is done by maximizing
+    * the joint diagonalization of the local scatter matrices $M(f_1),\dots,M(f_k)$, for the case of $k > 1$. Formally, this is done by maximizing
 \[
-		\sum_{l=1}^k \left \| \text{diag} \left( {{U}^\top M(f_l) { U }} \right) \right \|_F^2 .
+		\sum_{l=1}^k \left \| \text{diag} \left( {{U}^\top M(f_l) { U }} \right) \right \|^2
+\] for isotropic random fields, or 
+\[
+		\sum_{l=1}^k \left \| \text{diag} \left( {{U^\top} M^S_{(\boldsymbol{\alpha}, f)_l} {U}} \right) \right \|^2
+\] if the anisotropic assumption hold, where $M^S$ are the symmetric local covariance matrices, obtained as
+
+\[
+\mathbf{M}_{\boldsymbol{\alpha},f}^S(\mathbf{x}) \rightarrow 2^{-1} (\mathbf{M}_{\boldsymbol{\alpha},f}(\mathbf{x}) + \mathbf{M}_{\boldsymbol{\alpha},f}(\mathbf{x})^\top).
 \]
-  Hence, this approach finds an orthogonal matrix $U$ that makes all considered local covariance matrices as diagonal as possible.
+
+
+Hence, this approach finds an orthogonal matrix $U$ that makes all considered local covariance matrices as diagonal as possible.
 
 The estimated unmixing matrix is given by $\hat{W} = U^\top LCov(f_0)^{-1/2}$. In summary, this approach leads to a latent field $Z(s)$ that shows minimal spatial cross-dependence. The package `SpatialBSS` implements the above discussed approaches and is presented below.
 
@@ -205,7 +233,7 @@ sbss_res_lcov <- sbss(x = field, coords = coords, rob_whitening = TRUE,
 
 In the call above whitening is done with respect to a $LDiff(f)$ matrix where the kernel function and parameters are the first occurring in the argument `kernel_parameters`. In principle this can be also done with $LCov(f)$ matrices but as $LCov(f)$ matrices are not necessarily positive definite there is a high chance that the inversion produces an error.
 
-# Computing spatial kernel matrices
+## Computing spatial kernel matrices
 
 Internally, `sbss` computes for each chosen kernel function a matrix of dimension `c(n,n)` where each entry corresponds to the kernel function evaluated at the distance between two points. Hence, the entry i,j corresponds to $f(s_i - s_j)$ in the definition of local covariance matrices above. `spatial_kernel_matrices` is called inside `sbss` and therefore needs `coords`, `kernel_type` and `kernel_parameters` as described above. For the former example:
 
@@ -221,7 +249,7 @@ sbss_k <- sbss(x = field, kernel_list = ring_kernel_matrices)
 
 Note that the `coords` argument is not needed as the spatial kernel matrices are already computed.
 
-# Computing local covariance matrices
+## Computing local covariance matrices
 
 With the function `local_covariance_matrix` local covariance matrices can be computed based on spatial kernel matrices. This function gets the values of the random field and kernel matrices (usually the output of `spatial_kernel_matrix`) as input arguments. Furthermore, with the argument `center` it can be set if the random field is centered prior computing local covariance matrices. For the former example:
 
@@ -236,3 +264,32 @@ The output of this function is a list of same length as `kernel_list`, where eac
 local_diff <- local_covariance_matrix(field, kernel_list =  ring_kernel_matrices, 
                                       lcov = 'ldiff', center = TRUE)
 ```
+
+## Anisotropic Local Covariance Matrices
+The `sbss` function of the `SpatialBSS` package allows also the identification of latent fields
+that exhibit anisotropic spatial dependencies. To show this functionality the `veneto_weather` dataset (object of class  `sf`), which contains the weekly aggregated data for six meteorological variables collected from 75 monitoring stations in the Veneto region, Italy, during the year 2021, is used.
+
+Similarly to the previous example, spatial kernel functions and their corresponding parameters have to be set, in order to estimate the unmixing matrix. In this example, ring kernels have been selected, where the non-overlapping rings do not extend beyond $80000$ meters, as the maximum distance between the spatial point pairs is $181299.9$ meters.
+
+In addition, the `angles` argument, which is a vector of two values (i.e., the main direction $\alpha_1$ and the angular tolerance $\alpha_2$) has to be set in order to include the anisotropic constraint .
+```{r anis}
+library('SpatialBSS')
+
+data(veneto_weather)
+
+kernel_type <- 'ring'
+kernel_parameters <-c(0, 40000, 40000, 65000, 65000, 80000)
+                                          
+angles_1 <- list(c(0, pi / 8), c(pi / 4, pi / 8), c(pi / 2, pi / 8), c(3 * pi / 4, pi / 8))
+
+sbss_anis <- sbss(x = veneto_weather, kernel_type = kernel_type, 
+                  kernel_parameters = kernel_parameters, 
+                  angles = angles_1)
+
+```
+The output of `sbss` is a list of class `'sbss'` as previously detailed. 
+
+The found latent components (i.e., entries `s` of the output), which are spatially uncorrelated, can be used to predict the original variables on a grid or at desired spatial points using some interpolation methods. 
+
+For example, the `predict` function have to be recalled if the IDW method is used to interpolate the estimated latent fields. On the other hand, if the kriging method is applied for prediction purposes, the structural analysis for each component has to be conducted separately and a proper model has to be fitted for each latent random field. Based on the fitted models, the individual kriging predictions for the found components have to be aggregated into a vector and then multiplied by `w_inv`, i.e., the inverse of the loading matrix, to obtain the prediction of the original data at the spatial locations of interest.
+

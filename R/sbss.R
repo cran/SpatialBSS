@@ -4,14 +4,16 @@
 sbss <- function(x, ...) UseMethod("sbss")
 
 sbss.default <- function(x, coords, kernel_type = c('ring', 'ball', 'gauss'), kernel_parameters, 
-                         lcov = c('lcov', 'ldiff', 'lcov_norm'), ordered = TRUE, 
+                         lcov = c('lcov', 'ldiff', 'lcov_norm'), angles = NULL, ordered = TRUE, 
                          kernel_list = NULL, rob_whitening = FALSE, ...) {
   # kernel matrix
   kernel_type <- match.arg(kernel_type)
   lcov <- match.arg(lcov)
   
   if (!missing(coords) && !missing(kernel_parameters) && is.vector(kernel_parameters)) {
-    kernel_list <- spatial_kernel_matrix(coords, kernel_type = kernel_type, kernel_parameters = kernel_parameters)
+    kernel_list <- spatial_kernel_matrix(coords, kernel_type = kernel_type, 
+                                         kernel_parameters = kernel_parameters,
+                                         angles = angles)
   } else if (!is.null(kernel_list) && is.list(kernel_list)) {
     if (missing(coords)) {
       coords <- NULL
